@@ -113,7 +113,9 @@
         formatter: (ps) => { const i = ps[0].dataIndex, w = D.weeks[i]; return `<b>${esc(mLabel(w.key))} · ${esc(w.label)}</b> <span style="opacity:.7">(${esc(w.days)})</span>` + row("Closing balance", fmtFull(w.close)) + row("Inflows", fmtFull(w.inflow)) + row("Outflows", fmtFull(w.outflow)) + (w.status === "Projection" ? '<div style="opacity:.75;margin-top:4px">Projection, not actual</div>' : ""); }
       },
       xAxis: {
-        type: "category", data: labels, axisTick: { show: false }, axisLine: { lineStyle: { color: "#C7BBA5" } },
+        type: "category", data: labels, axisLine: { lineStyle: { color: "#C7BBA5" } },
+        axisTick: { show: true, length: 5, lineStyle: { color: "#C7BBA5" }, interval: (i) => i === 0 || labels[i] !== labels[i - 1] },
+        splitLine: { show: true, lineStyle: { color: "rgba(19,38,28,.06)", width: 1 }, interval: (i) => i > 0 && labels[i] !== labels[i - 1] },
         axisLabel: { ...baseText, interval: (i) => i === 0 || (labels[i] !== labels[i - 1] && /-(04|10)$/.test(labels[i])), formatter: (k) => mLabel(k) }
       },
       yAxis: { type: "value", show: false },
@@ -220,7 +222,7 @@
     $("#balHint").textContent = `${below} of ${pts.length} ${state.grain === "m" ? "month-ends" : "week-ends"} closed below the minimum of ${fmtL(state.min)}. Account-level, not filtered by category.`;
     c.setOption({
       animationDuration: 250,
-      grid: { left: 60, right: 16, top: 16, bottom: 28 },
+      grid: { left: 60, right: 16, top: 16, bottom: 34 },
       tooltip: {
         ...tipBase, trigger: "axis", axisPointer: { type: "line", lineStyle: { color: C.ink3, type: [3, 3] } },
         formatter: (ps) => { const p = pts[ps[0].dataIndex]; return `<b>${esc(p.label)}</b>${p.sub ? ` <span style="opacity:.7">${esc(p.sub)}</span>` : ""}` + row("Closing balance", fmtFull(p.close)) + (p.close < state.min ? `<div style="color:#F6B3A9;margin-top:4px">Below minimum by ${fmtFull(state.min - p.close)}</div>` : ""); }
@@ -245,7 +247,7 @@
     const max = Math.max(1, ...rows.map((r) => Math.max(r.i, r.o)));
     const ti = rows.reduce((s, r) => s + r.i, 0), to = rows.reduce((s, r) => s + r.o, 0);
     $("#actTable").innerHTML = `<table class="act"><thead><tr><th>Activity</th><th class="num">Inflows</th><th class="num">Outflows</th><th class="num">Net</th></tr></thead><tbody>` +
-      rows.map((r) => `<tr tabindex="0" data-cat="${r.cat}" class="${state.cat === r.cat ? "sel" : ""}" title="${state.cat === r.cat ? "Click to clear filter" : "Filter to " + r.cat}"><td>${r.cat}<div class="bar" aria-hidden="true"><i class="o" style="width:${(r.o / max) * 100}%"></i><i class="n" style="width:${(r.i / max) * 100}%"></i></div></td><td class="num" title="${fmtFull(r.i)}">${fmtL(r.i)}</td><td class="num" title="${fmtFull(r.o)}">${fmtL(r.o)}</td><td class="num" style="color:${r.i - r.o >= 0 ? C.gain : C.lossInk}" title="${fmtFull(r.i - r.o)}">${(r.i - r.o > 0 ? "+" : "") + fmtL(r.i - r.o)}</td></tr>`).join("") +
+      rows.map((r) => `<tr tabindex="0" data-cat="${r.cat}" class="${state.cat === r.cat ? "sel" : ""}" title="${state.cat === r.cat ? "Click to clear filter" : "Filter to " + r.cat}"><td>${r.cat}<div class="bar" aria-hidden="true"><i class="o" style="width:${r.o ? Math.max(4, (r.o / max) * 100) + "%" : "0"}"></i><i class="n" style="width:${r.i ? Math.max(4, (r.i / max) * 100) + "%" : "0"}"></i></div></td><td class="num" title="${fmtFull(r.i)}">${fmtL(r.i)}</td><td class="num" title="${fmtFull(r.o)}">${fmtL(r.o)}</td><td class="num" style="color:${r.i - r.o >= 0 ? C.gain : C.lossInk}" title="${fmtFull(r.i - r.o)}">${(r.i - r.o > 0 ? "+" : "") + fmtL(r.i - r.o)}</td></tr>`).join("") +
       `</tbody><tfoot><tr><td>Total</td><td class="num">${fmtL(ti)}</td><td class="num">${fmtL(to)}</td><td class="num" style="color:${ti - to >= 0 ? C.gain : C.lossInk}">${(ti - to > 0 ? "+" : "") + fmtL(ti - to)}</td></tr></tfoot></table>`;
     $("#actTable").querySelectorAll("tbody tr").forEach((tr) => {
       const go = () => { state.cat = state.cat === tr.dataset.cat ? "All" : tr.dataset.cat; $("#fCat").value = state.cat; state.page = 0; update(); };
@@ -265,7 +267,7 @@
     const list = Object.keys(t).filter((k) => H[k].dir === dir && inCat(H[k], state.cat) && t[k] >= 500).sort((a, b) => t[b] - t[a]).slice(0, 8);
     const color = dir === "in" ? C.gain : C.loss;
     if (!list.length) { c.clear(); c.setOption({ title: { text: "No " + (dir === "in" ? "inflows" : "outflows") + " for this filter", left: "center", top: "middle", textStyle: { ...baseText, fontWeight: 400 } } }); return; }
-    const short = (s) => (s.length > 26 ? s.slice(0, 25) + "…" : s);
+    const short = (s) => (s.length > 36 ? s.slice(0, 35) + "…" : s);
     c.setOption({
       animationDuration: 250,
       grid: { left: 8, right: 70, top: 4, bottom: 4, containLabel: true },
@@ -376,7 +378,10 @@
       lines.push({ kind: "grp", label, vals: A.map((a) => hs.reduce((s, h) => s + (a.v[h.id] || 0), 0)), sign });
       hs.forEach((h) => lines.push({ kind: "head", id: h.id, label: h.name, act: h.act, vals: A.map((a) => a.v[h.id] || 0), sign }));
     };
-    addGroup("Inflows", vis.filter((h) => h.dir === "in"), 1);
+    if (vis.some((h) => h.dir === "in")) lines.push({ kind: "sec", label: "Inflows" + (state.cat !== "All" ? " (" + state.cat + ")" : ""), vals: A.map((a) => flows(a, state.cat).i) });
+    vis.filter((h) => h.dir === "in").forEach((h) => lines.push({ kind: "head", id: h.id, label: h.name, act: h.act, vals: A.map((a) => a.v[h.id] || 0), sign: 1 }));
+    const F0 = A.map((a) => flows(a, state.cat));
+    if (vis.some((h) => h.dir === "out")) lines.push({ kind: "sec", label: "Outflows" + (state.cat !== "All" ? " (" + state.cat + ")" : ""), vals: F0.map((f) => f.o) });
     const groups = [...new Set(D.heads.filter((h) => h.dir === "out").map((h) => h.group))];
     groups.forEach((g) => addGroup(g, vis.filter((h) => h.dir === "out" && h.group === g), -1));
     const F = A.map((a) => flows(a, state.cat));
@@ -392,7 +397,7 @@
     const { r, A, lines } = stmtModel();
     const head = `<tr><th class="sticky">₹ lakh</th>${A.map((a, j) => `<th class="num"><button type="button" data-m="${r[j]}" title="Open ${mLabel(a.key)} line items">${mLabel(a.key)}${a.status === "Partly projected" ? "*" : ""}</button></th>`).join("")}<th class="num">Period</th></tr>`;
     const cell = (v, l) => { const cls = Math.abs(v) < 0.5 ? "zero" : l.signed ? (v < 0 ? "neg" : "pos") : ""; return `<td class="num ${cls}" title="${fmtFull(v)}">${Math.abs(v) < 0.5 ? "–" : fmtLk(v)}</td>`; };
-    const body = lines.map((l) => `<tr class="${l.kind === "grp" ? "grp" : l.kind === "grph" ? "grp clk" : l.kind === "tot" ? "tot" : "clk"}"${l.id ? ` data-h="${l.id}"` : ""}><td class="sticky">${esc(l.label)}${l.act && l.act !== "Operating" ? ` <span class="hint">· ${l.act}</span>` : ""}</td>${l.vals.map((v) => cell(v, l)).join("")}${cell(l.total, l)}</tr>`).join("");
+    const body = lines.map((l) => `<tr class="${l.kind === "sec" ? "sec" : l.kind === "grp" ? "grp" : l.kind === "grph" ? "grp clk" : l.kind === "tot" ? "tot" : "clk"}"${l.id ? ` data-h="${l.id}"` : ""}><td class="sticky">${esc(l.label)}${l.act && l.act !== "Operating" ? ` <span class="hint">· ${l.act}</span>` : ""}</td>${l.vals.map((v) => cell(v, l)).join("")}${cell(l.total, l)}</tr>`).join("");
     $("#paneStmt").innerHTML = `<table class="data"><thead>${head}</thead><tbody>${body}</tbody></table>` + (A.some((a) => a.status === "Partly projected") ? '<p class="hint" style="padding:8px 10px">* includes projected weeks.</p>' : "");
     $("#paneStmt").querySelectorAll("thead button[data-m]").forEach((b) => b.addEventListener("click", () => openMonth(+b.dataset.m)));
     $("#paneStmt").querySelectorAll("tr[data-h]").forEach((tr) => tr.addEventListener("click", () => openHead(tr.dataset.h)));
