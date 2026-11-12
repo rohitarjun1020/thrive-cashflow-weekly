@@ -247,7 +247,7 @@
     const max = Math.max(1, ...rows.map((r) => Math.max(r.i, r.o)));
     const ti = rows.reduce((s, r) => s + r.i, 0), to = rows.reduce((s, r) => s + r.o, 0);
     $("#actTable").innerHTML = `<table class="act"><thead><tr><th>Activity</th><th class="num">Inflows</th><th class="num">Outflows</th><th class="num">Net</th></tr></thead><tbody>` +
-      rows.map((r) => `<tr tabindex="0" data-cat="${r.cat}" class="${state.cat === r.cat ? "sel" : ""}" title="${state.cat === r.cat ? "Click to clear filter" : "Filter to " + r.cat}"><td>${r.cat}<div class="bar" aria-hidden="true"><i class="o" style="width:${r.o ? Math.max(4, (r.o / max) * 100) + "%" : "0"}"></i><i class="n" style="width:${r.i ? Math.max(4, (r.i / max) * 100) + "%" : "0"}"></i></div></td><td class="num" title="${fmtFull(r.i)}">${fmtL(r.i)}</td><td class="num" title="${fmtFull(r.o)}">${fmtL(r.o)}</td><td class="num" style="color:${r.i - r.o >= 0 ? C.gain : C.lossInk}" title="${fmtFull(r.i - r.o)}">${(r.i - r.o > 0 ? "+" : "") + fmtL(r.i - r.o)}</td></tr>`).join("") +
+      rows.map((r) => `<tr tabindex="0" data-cat="${r.cat}" class="${state.cat === r.cat ? "sel" : ""}" title="${state.cat === r.cat ? "Click to clear filter" : "Filter to " + r.cat}"><td>${r.cat}<div class="bar" aria-hidden="true"><i class="o" style="width:${r.o ? "max(12px," + (r.o / max) * 100 + "%)" : "0"}"></i><i class="n" style="width:${r.i ? "max(12px," + (r.i / max) * 100 + "%)" : "0"}"></i></div></td><td class="num" title="${fmtFull(r.i)}">${fmtL(r.i)}</td><td class="num" title="${fmtFull(r.o)}">${fmtL(r.o)}</td><td class="num" style="color:${r.i - r.o >= 0 ? C.gain : C.lossInk}" title="${fmtFull(r.i - r.o)}">${(r.i - r.o > 0 ? "+" : "") + fmtL(r.i - r.o)}</td></tr>`).join("") +
       `</tbody><tfoot><tr><td>Total</td><td class="num">${fmtL(ti)}</td><td class="num">${fmtL(to)}</td><td class="num" style="color:${ti - to >= 0 ? C.gain : C.lossInk}">${(ti - to > 0 ? "+" : "") + fmtL(ti - to)}</td></tr></tfoot></table>`;
     $("#actTable").querySelectorAll("tbody tr").forEach((tr) => {
       const go = () => { state.cat = state.cat === tr.dataset.cat ? "All" : tr.dataset.cat; $("#fCat").value = state.cat; state.page = 0; update(); };
@@ -267,13 +267,13 @@
     const list = Object.keys(t).filter((k) => H[k].dir === dir && inCat(H[k], state.cat) && t[k] >= 500).sort((a, b) => t[b] - t[a]).slice(0, 8);
     const color = dir === "in" ? C.gain : C.loss;
     if (!list.length) { c.clear(); c.setOption({ title: { text: "No " + (dir === "in" ? "inflows" : "outflows") + " for this filter", left: "center", top: "middle", textStyle: { ...baseText, fontWeight: 400 } } }); return; }
-    const short = (s) => (s.length > 36 ? s.slice(0, 35) + "…" : s);
+    const short = (s) => s;
     c.setOption({
       animationDuration: 250,
       grid: { left: 8, right: 70, top: 4, bottom: 4, containLabel: true },
       tooltip: { ...tipBase, trigger: "item", formatter: (p) => { const h = H[list[p.dataIndex]]; return `<b>${esc(h.name)}</b><div style="opacity:.7">${esc(h.group)} · ${h.act}</div>` + row("Total in period", fmtFull(p.value)) + '<div style="opacity:.7;margin-top:4px">Click for transactions</div>'; } },
       xAxis: { type: "value", show: false },
-      yAxis: { type: "category", inverse: true, data: list.map((k) => short(H[k].name)), axisLabel: { ...baseText, color: C.ink2 }, axisTick: { show: false }, axisLine: { show: false }, triggerEvent: true },
+      yAxis: { type: "category", inverse: true, data: list.map((k) => short(H[k].name)), axisLabel: { ...baseText, color: C.ink2, width: 170, overflow: "break", lineHeight: 14 }, axisTick: { show: false }, axisLine: { show: false }, triggerEvent: true },
       series: [{ type: "bar", data: list.map((k) => t[k]), barMaxWidth: 16, itemStyle: { color, borderRadius: [0, 4, 4, 0] }, label: { show: true, position: "right", formatter: (p) => fmtL(p.value), ...baseText, color: C.ink2 } }]
     }, { notMerge: true });
     c.off("click");
