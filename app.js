@@ -2,10 +2,11 @@
   "use strict";
   const D = window.CF;
   const C = {
-    ink: "#13261C", ink2: "#3F4F45", ink3: "#5E6A62", rule: "#DCD2C0", paper: "#FBF8F2",
-    accent: "#6A3CF0", gain: "#17663A", loss: "#D9574A", lossInk: "#A93A2F"
+    ink: "#10132A", ink2: "#464B63", ink3: "#62677E", rule: "#EDEEF3", line: "#D9DBE5", paper: "#FFFFFF",
+    accent: "#6D4AFF", accentDeep: "#4B2FD1", gain: "#0E9F6E", gainInk: "#047857", loss: "#E5484D", lossInk: "#C42F35"
   };
-  const FONT = '"Public Sans", system-ui, sans-serif';
+  const FONT = '"Manrope", system-ui, sans-serif';
+  const grad = (top, bottom) => new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: top }, { offset: 1, color: bottom }]);
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -32,8 +33,6 @@
   const keys = D.months.map((m) => m.key);
   const mIndex = {}; keys.forEach((k, i) => (mIndex[k] = i));
   const weekMonth = D.weeks.map((w) => mIndex[w.key]);
-  const INV = D.heads.filter((h) => h.act === "Investing").map((h) => h.name);
-  const FIN = D.heads.filter((h) => h.act === "Financing").map((h) => h.name);
   const txAct = (t) => (t[6] ? H[t[6]].act : (/^bank transfer$/i.test(t[5]) ? "Transfer" : "Unmapped"));
 
   // ---------- state ----------
@@ -83,18 +82,18 @@
   function mk(id) { const c = echarts.init(document.getElementById(id), null, { renderer: "svg" }); charts[id] = c; return c; }
   const baseText = { fontFamily: FONT, color: C.ink3, fontSize: 12 };
   const tipBase = {
-    backgroundColor: C.ink, borderWidth: 0, padding: [8, 10], textStyle: { color: "#F3EDE2", fontFamily: FONT, fontSize: 12 },
-    extraCssText: "border-radius:4px;box-shadow:0 8px 24px rgba(19,38,28,.18);font-variant-numeric:tabular-nums"
+    backgroundColor: "#FFFFFF", borderColor: "#E7E8EF", borderWidth: 1, padding: [10, 12], textStyle: { color: C.ink, fontFamily: FONT, fontSize: 12 },
+    extraCssText: "border-radius:12px;box-shadow:0 12px 32px rgba(16,19,42,.14);font-variant-numeric:tabular-nums;min-width:200px"
   };
   const yAxisBase = {
-    type: "value", axisLabel: { ...baseText, formatter: axisL }, splitLine: { lineStyle: { color: C.rule, width: 1 } },
+    type: "value", axisLabel: { ...baseText, formatter: axisL }, splitLine: { lineStyle: { color: C.rule, width: 1, type: [4, 4] } },
     axisLine: { show: false }, axisTick: { show: false }
   };
   const xCat = (data) => ({
     type: "category", data, axisLabel: { ...baseText, hideOverlap: true }, axisTick: { show: false },
-    axisLine: { lineStyle: { color: "#C7BBA5" } }, triggerEvent: true
+    axisLine: { lineStyle: { color: C.line } }, triggerEvent: true
   });
-  const row = (label, val, color) => `<div style="display:flex;justify-content:space-between;gap:18px"><span>${color ? `<i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${color};margin-right:6px"></i>` : ""}${label}</span><b style="font-weight:600">${val}</b></div>`;
+  const row = (label, val, color) => `<div style="display:flex;justify-content:space-between;gap:18px"><span>${color ? `<i style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${color};margin-right:6px"></i>` : ""}${label}</span><b style="font-weight:700">${val}</b></div>`;
 
   // ---------- loom (signature: weekly balance brush) ----------
   let loomSilent = false;
@@ -102,28 +101,28 @@
     const c = charts.loomChart || mk("loomChart");
     const data = D.weeks.map((w) => ({
       value: w.close,
-      itemStyle: { color: w.close < state.min ? C.loss : C.gain, opacity: w.status === "Projection" ? 0.4 : 1, borderRadius: w.close >= 0 ? [2, 2, 0, 0] : [0, 0, 2, 2] }
+      itemStyle: { color: w.close < state.min ? C.loss : C.gain, opacity: w.status === "Projection" ? 0.4 : 1, borderRadius: w.close >= 0 ? [3, 3, 0, 0] : [0, 0, 3, 3] }
     }));
     const labels = D.weeks.map((w) => w.key);
     c.setOption({
       animation: false,
-      grid: { left: 22, right: 22, top: 10, bottom: 22 },
+      grid: { left: 24, right: 24, top: 12, bottom: 24 },
       tooltip: {
-        ...tipBase, trigger: "axis", axisPointer: { type: "shadow", shadowStyle: { color: "rgba(106,60,240,.08)" } },
+        ...tipBase, trigger: "axis", axisPointer: { type: "shadow", shadowStyle: { color: "rgba(109,74,255,.08)" } },
         formatter: (ps) => { const i = ps[0].dataIndex, w = D.weeks[i]; return `<b>${esc(mLabel(w.key))} · ${esc(w.label)}</b> <span style="opacity:.7">(${esc(w.days)})</span>` + row("Closing balance", fmtFull(w.close)) + row("Inflows", fmtFull(w.inflow)) + row("Outflows", fmtFull(w.outflow)) + (w.status === "Projection" ? '<div style="opacity:.75;margin-top:4px">Projection, not actual</div>' : ""); }
       },
       xAxis: {
-        type: "category", data: labels, axisLine: { lineStyle: { color: "#C7BBA5" } },
-        axisTick: { show: true, length: 5, lineStyle: { color: "#C7BBA5" }, interval: (i) => i === 0 || labels[i] !== labels[i - 1] },
-        splitLine: { show: true, lineStyle: { color: "rgba(19,38,28,.06)", width: 1 }, interval: (i) => i > 0 && labels[i] !== labels[i - 1] },
+        type: "category", data: labels, axisLine: { lineStyle: { color: C.line } },
+        axisTick: { show: true, length: 4, lineStyle: { color: C.line }, interval: (i) => i === 0 || labels[i] !== labels[i - 1] },
+        splitLine: { show: true, lineStyle: { color: "rgba(16,19,42,.05)", width: 1 }, interval: (i) => i > 0 && labels[i] !== labels[i - 1] },
         axisLabel: { ...baseText, interval: (i) => i === 0 || (labels[i] !== labels[i - 1] && /-(04|10)$/.test(labels[i])), formatter: (k) => mLabel(k) }
       },
       yAxis: { type: "value", show: false },
       series: [{
         type: "bar", data, barCategoryGap: "18%",
-        markLine: { silent: true, symbol: "none", lineStyle: { color: C.ink, type: [4, 3], width: 1 }, label: { show: false }, data: [{ yAxis: state.min }] }
+        markLine: { silent: true, symbol: "none", lineStyle: { color: C.ink3, type: [4, 3], width: 1 }, label: { show: false }, data: [{ yAxis: state.min }] }
       }],
-      brush: { xAxisIndex: 0, brushType: "lineX", brushMode: "single", transformable: true, throttleType: "debounce", throttleDelay: 150, brushStyle: { color: "rgba(106,60,240,.14)", borderColor: C.accent, borderWidth: 1.5 }, outOfBrush: { colorAlpha: 0.35 } },
+      brush: { xAxisIndex: 0, brushType: "lineX", brushMode: "single", transformable: true, throttleType: "debounce", throttleDelay: 150, brushStyle: { color: "rgba(109,74,255,.10)", borderColor: C.accent, borderWidth: 2 }, outOfBrush: { colorAlpha: 0.28 } },
       toolbox: { show: false, feature: { brush: { type: ["lineX"] } } }
     }, { notMerge: false });
     c.dispatchAction({ type: "takeGlobalCursor", key: "brush", brushOption: { brushType: "lineX", brushMode: "single" } });
@@ -167,17 +166,37 @@
     const below = last.close < state.min;
     const proj = r.some((i) => agg(i).status === "Partly projected");
     const catNote = state.cat === "All" ? "" : " · " + state.cat;
+    const belowN = A.filter((a) => a.close < state.min).length;
+    const I = {
+      open: '<path d="M4 10h12M10 4v12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      in: '<path d="M10 16V4M5 9l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+      out: '<path d="M10 4v12M5 11l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+      net: '<path d="M3 13l4-4 3 3 7-7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+      close: '<rect x="3" y="5" width="14" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 9h14" stroke="currentColor" stroke-width="1.8"/>',
+      run: '<circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10 6.5V10l2.5 1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+      below: '<path d="M10 3l7.5 13h-15z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 8v3.5M10 14v.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'
+    };
+    const ic = (n, cls) => `<span class="ic ${cls || ""}"><svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true">${I[n]}</svg></span>`;
     const K = [
-      { k: "Opening balance", v: fmtL(first.open), d: "1 " + mLabel(first.key).replace("-", " 20"), t: fmtFull(first.open) },
-      { k: "Total inflows" + catNote, v: fmtL(fi), d: r.length + (r.length === 1 ? " month" : " months"), t: fmtFull(fi) },
-      { k: "Total outflows" + catNote, v: fmtL(fo), d: "Avg " + fmtL(fo / r.length) + "/mo", t: fmtFull(fo) },
-      { k: "Net cash flow" + catNote, v: (net > 0 ? "+" : "") + fmtL(net), cls: net >= 0 ? "gain" : "loss", d: net >= 0 ? "Inflows exceeded outflows" : "Outflows exceeded inflows", t: fmtFull(net) },
-      { k: "Closing balance", v: fmtL(last.close), d: (below ? '<span class="tag loss">Below minimum</span> ' : "") + (proj ? '<span class="tag proj">Includes projection</span> ' : "") + "end " + mLabel(last.key), t: fmtFull(last.close) },
-      { k: "Months of runway", v: runway, d: runwayD }
+      { c: "k-open", ic: ic("open"), k: "Opening balance", v: fmtL(first.open), d: "1 " + mLabel(first.key).replace("-", " 20"), t: fmtFull(first.open) },
+      { c: "k-in", ic: ic("in", "in"), k: "Total inflows" + catNote, v: fmtL(fi), d: r.length + (r.length === 1 ? " month" : " months") + " · avg " + fmtL(fi / r.length) + "/mo", t: fmtFull(fi) },
+      { c: "k-out", ic: ic("out", "out"), k: "Total outflows" + catNote, v: fmtL(fo), d: "Avg " + fmtL(fo / r.length) + "/mo", t: fmtFull(fo) },
+      { c: "k-net", ic: ic("net", net >= 0 ? "in" : "out"), k: "Net cash flow" + catNote, v: (net > 0 ? "+" : "") + fmtL(net), cls: net >= 0 ? "gain" : "loss", d: net >= 0 ? "Inflows exceeded outflows" : "Outflows exceeded inflows", t: fmtFull(net) },
+      { c: "k-close", ic: ic("close"), k: "Closing balance · end " + mLabel(last.key), v: fmtL(last.close), d: (below ? '<span class="tag loss">Below minimum</span> ' : "") + (proj ? '<span class="tag proj">Includes projection</span> ' : "") + "Exact " + fmtFull(last.close), t: fmtFull(last.close), hero: true },
+      { c: "k-run", ic: ic("run", "acc"), k: "Months of runway", v: runway, d: runwayD }
     ];
-    $("#kpis").innerHTML = K.map((x) => `<div class="kpi"${x.t ? ` title="${esc(x.k)}: ${esc(x.t)}"` : ""}><div class="k">${esc(x.k)}</div><div class="v num ${x.cls || ""}">${x.v}</div><div class="d">${x.d}</div></div>`).join("");
-    $("#bridge").innerHTML = `Opening <b>${fmtL(first.open)}</b> + inflows <b>${fmtL(ai)}</b> − outflows <b>${fmtL(ao)}</b> + Razorpay balance movement <b>${fmtL(rz)}</b>` +
-      (Math.abs(adj) >= 1 ? ` + carry-forward adjustments in the workbook <b>${fmtL(adj)}</b>` : "") + ` = closing <b>${fmtL(last.close)}</b>`;
+    const bridge = `Opening <b>${fmtL(first.open)}</b> + inflows <b>${fmtL(ai)}</b> − outflows <b>${fmtL(ao)}</b> + Razorpay movement <b>${fmtL(rz)}</b>` + (Math.abs(adj) >= 1 ? ` + workbook carry-forward <b>${fmtL(adj)}</b>` : "") + ` = closing <b>${fmtL(last.close)}</b>`;
+    if (charts.heroSpark) { charts.heroSpark.dispose(); delete charts.heroSpark; }
+    $("#kpis").innerHTML = K.map((x) => `<div class="kpi ${x.c}"${x.t ? ` title="${esc(x.k)}: ${esc(x.t)}"` : ""}><div class="k">${x.ic}${esc(x.k)}</div><div class="v num ${x.cls || ""}">${x.v}</div><div class="d">${x.d}</div>${x.hero ? '<div class="spark" id="heroSpark" aria-hidden="true"></div><p class="bridge">' + bridge + "</p>" : ""}</div>`).join("") +
+      `<div class="tile k-below"><div class="k">${ic("below", "out")}Months below minimum</div><div class="below-v">${belowN} <small>of ${A.length}</small></div><div class="dots" role="img" aria-label="${belowN} of ${A.length} month-ends below minimum">${A.map((a) => `<i class="${a.close < state.min ? "b" : ""}" title="${mLabel(a.key)}: ${fmtFull(a.close)}"></i>`).join("")}</div></div>`;
+    const sp = mk("heroSpark");
+    sp.setOption({
+      animation: false, grid: { left: 8, right: 8, top: 8, bottom: 4 },
+      tooltip: { ...tipBase, trigger: "axis", axisPointer: { type: "line", lineStyle: { color: "rgba(255,255,255,.5)" } }, formatter: (ps) => `<b>${mLabel(A[ps[0].dataIndex].key)}</b>` + row("Closing balance", fmtFull(A[ps[0].dataIndex].close)) },
+      xAxis: { type: "category", show: false, boundaryGap: false, data: A.map((a) => a.key) },
+      yAxis: { type: "value", show: false, scale: true },
+      series: [{ type: "line", data: A.map((a) => a.close), smooth: 0.35, smoothMonotone: "x", symbol: "circle", symbolSize: 5, showSymbol: A.length <= 14, lineStyle: { color: "#FFFFFF", width: 2.5 }, itemStyle: { color: "#FFFFFF" }, areaStyle: { color: grad("rgba(255,255,255,.32)", "rgba(255,255,255,0)") } }]
+    });
     const sn = $("#scopeNote");
     if (state.cat !== "All") { sn.hidden = false; sn.textContent = "Showing " + state.cat.toLowerCase() + " flows only. Balances, runway and the balance chart stay account-level."; }
     else sn.hidden = true;
@@ -191,18 +210,18 @@
     const projStyle = (x) => (x.a.status === "Partly projected" ? { opacity: 0.55, decal: { symbol: "rect", dashArrayX: [1, 0], dashArrayY: [3, 3], rotation: -0.785, color: "rgba(255,255,255,.55)" } } : {});
     c.setOption({
       animationDuration: 250,
-      grid: { left: 56, right: 12, top: 36, bottom: 28 },
-      legend: { top: 0, left: 0, itemWidth: 10, itemHeight: 10, textStyle: { ...baseText, color: C.ink2 }, data: ["Inflows", "Outflows", "Net cash flow"] },
+      grid: { left: 56, right: 12, top: 40, bottom: 28 },
+      legend: { top: 0, left: 0, icon: "roundRect", itemWidth: 12, itemHeight: 12, itemGap: 18, textStyle: { ...baseText, color: C.ink2, fontWeight: 600 }, data: ["Inflows", "Outflows", "Net cash flow"] },
       tooltip: {
-        ...tipBase, trigger: "axis", axisPointer: { type: "shadow", shadowStyle: { color: "rgba(106,60,240,.07)" } },
+        ...tipBase, trigger: "axis", axisPointer: { type: "shadow", shadowStyle: { color: "rgba(109,74,255,.06)" } },
         formatter: (ps) => { const x = rows[ps[0].dataIndex]; return `<b>${mLabel(x.a.key)}</b>${x.a.status !== "Actual" ? ` <span style="opacity:.7">${esc(x.a.status)}</span>` : ""}` + row("Inflows", fmtFull(x.f.i), C.gain) + row("Outflows", fmtFull(x.f.o), C.loss) + row("Net cash flow", fmtFull(x.f.i - x.f.o), C.accent) + '<div style="opacity:.7;margin-top:4px">Click for line items</div>'; }
       },
       xAxis: xCat(rows.map((x) => mLabel(x.a.key))),
       yAxis: yAxisBase,
       series: [
-        { name: "Inflows", type: "bar", stack: "f", barMaxWidth: 26, itemStyle: { color: C.gain, borderRadius: [4, 4, 0, 0] }, data: rows.map((x) => ({ value: x.f.i, itemStyle: projStyle(x) })) },
-        { name: "Outflows", type: "bar", stack: "f", barMaxWidth: 26, itemStyle: { color: C.loss, borderRadius: [0, 0, 4, 4] }, data: rows.map((x) => ({ value: -x.f.o, itemStyle: projStyle(x) })) },
-        { name: "Net cash flow", type: "line", data: rows.map((x) => x.f.i - x.f.o), lineStyle: { width: 2, color: C.accent }, itemStyle: { color: C.accent, borderColor: C.paper, borderWidth: 2 }, symbol: "circle", symbolSize: 8, z: 5 }
+        { name: "Inflows", type: "bar", stack: "f", barMaxWidth: 28, itemStyle: { color: grad("#22C08A", C.gain), borderRadius: [7, 7, 0, 0] }, emphasis: { itemStyle: { color: C.gainInk } }, data: rows.map((x) => ({ value: x.f.i, itemStyle: projStyle(x) })) },
+        { name: "Outflows", type: "bar", stack: "f", barMaxWidth: 28, itemStyle: { color: grad(C.loss, "#F27A7E"), borderRadius: [0, 0, 7, 7] }, emphasis: { itemStyle: { color: C.lossInk } }, data: rows.map((x) => ({ value: -x.f.o, itemStyle: projStyle(x) })) },
+        { name: "Net cash flow", type: "line", smooth: 0.3, smoothMonotone: "x", data: rows.map((x) => x.f.i - x.f.o), lineStyle: { width: 3, color: C.accent, shadowColor: "rgba(109,74,255,.35)", shadowBlur: 8, shadowOffsetY: 3 }, itemStyle: { color: "#fff", borderColor: C.accent, borderWidth: 2.5 }, symbol: "circle", symbolSize: 9, z: 5 }
       ]
     }, { notMerge: true });
     c.off("click");
@@ -224,16 +243,17 @@
       animationDuration: 250,
       grid: { left: 60, right: 16, top: 16, bottom: 34 },
       tooltip: {
-        ...tipBase, trigger: "axis", axisPointer: { type: "line", lineStyle: { color: C.ink3, type: [3, 3] } },
-        formatter: (ps) => { const p = pts[ps[0].dataIndex]; return `<b>${esc(p.label)}</b>${p.sub ? ` <span style="opacity:.7">${esc(p.sub)}</span>` : ""}` + row("Closing balance", fmtFull(p.close)) + (p.close < state.min ? `<div style="color:#F6B3A9;margin-top:4px">Below minimum by ${fmtFull(state.min - p.close)}</div>` : ""); }
+        ...tipBase, trigger: "axis", axisPointer: { type: "line", lineStyle: { color: C.accent, type: [3, 3] } },
+        formatter: (ps) => { const p = pts[ps[0].dataIndex]; return `<b>${esc(p.label)}</b>${p.sub ? ` <span style="opacity:.7">${esc(p.sub)}</span>` : ""}` + row("Closing balance", fmtFull(p.close)) + (p.close < state.min ? `<div style="color:${C.lossInk};font-weight:700;margin-top:4px">Below minimum by ${fmtFull(state.min - p.close)}</div>` : ""); }
       },
       xAxis: { ...xCat(pts.map((p) => p.label)), boundaryGap: false },
       yAxis: yAxisBase,
       series: [{
-        type: "line", lineStyle: { width: 2, color: C.ink2 }, symbol: "circle", symbolSize: state.grain === "m" ? 9 : 5, showAllSymbol: true,
-        data: pts.map((p) => ({ value: p.close, itemStyle: { color: p.close < state.min ? C.loss : C.gain, borderColor: C.paper, borderWidth: state.grain === "m" ? 2 : 1 } })),
-        markArea: { silent: true, itemStyle: { color: "rgba(217,87,74,.07)" }, data: [[{ yAxis: state.min }, { yAxis: "min" }]] },
-        markLine: { silent: true, symbol: "none", lineStyle: { color: C.ink, type: [5, 4], width: 1 }, label: { formatter: "Minimum " + fmtL(state.min), color: C.ink2, fontFamily: FONT, fontSize: 11, position: "insideStartTop" }, data: [{ yAxis: state.min }] }
+        type: "line", smooth: 0.25, smoothMonotone: "x", lineStyle: { width: 3, color: C.accent }, symbol: "circle", symbolSize: state.grain === "m" ? 9 : 6, showAllSymbol: true,
+        areaStyle: { origin: "start", color: grad("rgba(109,74,255,.22)", "rgba(109,74,255,0)") },
+        data: pts.map((p) => ({ value: p.close, itemStyle: { color: p.close < state.min ? C.loss : C.gain, borderColor: "#fff", borderWidth: 2 } })),
+        markArea: { silent: true, itemStyle: { color: "rgba(229,72,77,.06)" }, data: [[{ yAxis: state.min }, { yAxis: "min" }]] },
+        markLine: { silent: true, symbol: "none", lineStyle: { color: C.lossInk, type: [5, 4], width: 1.2 }, label: { formatter: "Minimum " + fmtL(state.min), color: C.lossInk, fontFamily: FONT, fontWeight: 700, fontSize: 11, position: "insideStartTop" }, data: [{ yAxis: state.min }] }
       }]
     }, { notMerge: true });
     c.off("click");
@@ -247,8 +267,8 @@
     const max = Math.max(1, ...rows.map((r) => Math.max(r.i, r.o)));
     const ti = rows.reduce((s, r) => s + r.i, 0), to = rows.reduce((s, r) => s + r.o, 0);
     $("#actTable").innerHTML = `<table class="act"><thead><tr><th>Activity</th><th class="num">Inflows</th><th class="num">Outflows</th><th class="num">Net</th></tr></thead><tbody>` +
-      rows.map((r) => `<tr tabindex="0" data-cat="${r.cat}" class="${state.cat === r.cat ? "sel" : ""}" title="${state.cat === r.cat ? "Click to clear filter" : "Filter to " + r.cat}"><td>${r.cat}<div class="bar" aria-hidden="true"><i class="o" style="width:${r.o ? "max(12px," + (r.o / max) * 100 + "%)" : "0"}"></i><i class="n" style="width:${r.i ? "max(12px," + (r.i / max) * 100 + "%)" : "0"}"></i></div></td><td class="num" title="${fmtFull(r.i)}">${fmtL(r.i)}</td><td class="num" title="${fmtFull(r.o)}">${fmtL(r.o)}</td><td class="num" style="color:${r.i - r.o >= 0 ? C.gain : C.lossInk}" title="${fmtFull(r.i - r.o)}">${(r.i - r.o > 0 ? "+" : "") + fmtL(r.i - r.o)}</td></tr>`).join("") +
-      `</tbody><tfoot><tr><td>Total</td><td class="num">${fmtL(ti)}</td><td class="num">${fmtL(to)}</td><td class="num" style="color:${ti - to >= 0 ? C.gain : C.lossInk}">${(ti - to > 0 ? "+" : "") + fmtL(ti - to)}</td></tr></tfoot></table>`;
+      rows.map((r) => `<tr tabindex="0" data-cat="${r.cat}" class="${state.cat === r.cat ? "sel" : ""}" title="${state.cat === r.cat ? "Click to clear filter" : "Filter to " + r.cat}"><td>${r.cat}<div class="bar" aria-hidden="true"><i class="o" style="width:${r.o ? "max(12px," + (r.o / max) * 100 + "%)" : "0"}"></i><i class="n" style="width:${r.i ? "max(12px," + (r.i / max) * 100 + "%)" : "0"}"></i></div></td><td class="num" title="${fmtFull(r.i)}">${fmtL(r.i)}</td><td class="num" title="${fmtFull(r.o)}">${fmtL(r.o)}</td><td class="num" style="color:${r.i - r.o >= 0 ? C.gainInk : C.lossInk}" title="${fmtFull(r.i - r.o)}">${(r.i - r.o > 0 ? "+" : "") + fmtL(r.i - r.o)}</td></tr>`).join("") +
+      `</tbody><tfoot><tr><td>Total</td><td class="num">${fmtL(ti)}</td><td class="num">${fmtL(to)}</td><td class="num" style="color:${ti - to >= 0 ? C.gainInk : C.lossInk}">${(ti - to > 0 ? "+" : "") + fmtL(ti - to)}</td></tr></tfoot></table>`;
     $("#actTable").querySelectorAll("tbody tr").forEach((tr) => {
       const go = () => { state.cat = state.cat === tr.dataset.cat ? "All" : tr.dataset.cat; $("#fCat").value = state.cat; state.page = 0; update(); };
       tr.addEventListener("click", go);
@@ -264,17 +284,17 @@
   function drawTop(id, dir) {
     const c = charts[id] || mk(id);
     const t = headTotals();
-    const list = Object.keys(t).filter((k) => H[k].dir === dir && inCat(H[k], state.cat) && t[k] >= 500).sort((a, b) => t[b] - t[a]).slice(0, 8);
+    const list = Object.keys(t).filter((k) => H[k].dir === dir && inCat(H[k], state.cat) && t[k] >= 500).sort((a, b) => t[b] - t[a]).slice(0, 6);
     const color = dir === "in" ? C.gain : C.loss;
     if (!list.length) { c.clear(); c.setOption({ title: { text: "No " + (dir === "in" ? "inflows" : "outflows") + " for this filter", left: "center", top: "middle", textStyle: { ...baseText, fontWeight: 400 } } }); return; }
     const short = (s) => s;
     c.setOption({
       animationDuration: 250,
-      grid: { left: 8, right: 70, top: 4, bottom: 4, containLabel: true },
+      grid: { left: 4, right: 72, top: 4, bottom: 4, containLabel: true },
       tooltip: { ...tipBase, trigger: "item", formatter: (p) => { const h = H[list[p.dataIndex]]; return `<b>${esc(h.name)}</b><div style="opacity:.7">${esc(h.group)} · ${h.act}</div>` + row("Total in period", fmtFull(p.value)) + '<div style="opacity:.7;margin-top:4px">Click for transactions</div>'; } },
       xAxis: { type: "value", show: false },
-      yAxis: { type: "category", inverse: true, data: list.map((k) => short(H[k].name)), axisLabel: { ...baseText, color: C.ink2, width: 170, overflow: "break", lineHeight: 14 }, axisTick: { show: false }, axisLine: { show: false }, triggerEvent: true },
-      series: [{ type: "bar", data: list.map((k) => t[k]), barMaxWidth: 16, itemStyle: { color, borderRadius: [0, 4, 4, 0] }, label: { show: true, position: "right", formatter: (p) => fmtL(p.value), ...baseText, color: C.ink2 } }]
+      yAxis: { type: "category", inverse: true, data: list.map((k) => short(H[k].name)), axisLabel: { ...baseText, color: C.ink2, fontWeight: 600, width: 150, overflow: "break", lineHeight: 14 }, axisTick: { show: false }, axisLine: { show: false }, triggerEvent: true },
+      series: [{ type: "bar", data: list.map((k) => t[k]), barMaxWidth: 12, showBackground: true, backgroundStyle: { color: "#F1F2F7", borderRadius: 6 }, itemStyle: { color, borderRadius: 6 }, emphasis: { itemStyle: { color: dir === "in" ? C.gainInk : C.lossInk } }, label: { show: true, position: "right", formatter: (p) => fmtL(p.value), ...baseText, color: C.ink, fontWeight: 700 } }]
     }, { notMerge: true });
     c.off("click");
     c.on("click", (p) => { const idx = p.componentType === "series" ? p.dataIndex : p.componentType === "yAxis" ? list.findIndex((k) => short(H[k].name) === p.value) : -1; if (idx >= 0) openHead(list[idx]); });
@@ -287,11 +307,12 @@
     lastFocus = document.activeElement;
     $("#drawerTitle").textContent = title;
     $("#drawerBody").innerHTML = html;
-    drawer.hidden = false;
+    drawer.hidden = false; $("#scrim").hidden = false;
     $("#drawerClose").focus();
   }
-  function closeDrawer() { drawer.hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+  function closeDrawer() { drawer.hidden = true; $("#scrim").hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
   $("#drawerClose").addEventListener("click", closeDrawer);
+  $("#scrim").addEventListener("click", closeDrawer);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !drawer.hidden) closeDrawer(); });
 
   const sumTx = (list) => list.reduce((s, t) => s + t[4], 0);
@@ -315,7 +336,7 @@
       <div><div class="k">Opening</div><div class="v num">${fmtL(a.open)}</div></div>
       <div><div class="k">Inflows</div><div class="v num">${fmtL(a.inflow)}</div></div>
       <div><div class="k">Outflows</div><div class="v num">${fmtL(a.outflow)}</div></div>
-      <div><div class="k">Net cash flow</div><div class="v num" style="color:${net >= 0 ? C.gain : C.lossInk}">${(net > 0 ? "+" : "") + fmtL(net)}</div></div>
+      <div><div class="k">Net cash flow</div><div class="v num" style="color:${net >= 0 ? C.gainInk : C.lossInk}">${(net > 0 ? "+" : "") + fmtL(net)}</div></div>
       <div><div class="k">Razorpay movement</div><div class="v num">${fmtL(a.rzp)}</div></div>
       <div><div class="k">Closing</div><div class="v num">${fmtL(a.close)}${a.close < state.min ? ' <span class="tag loss">Below min</span>' : ""}</div></div></div>
       <p class="recon">${esc(a.status)}. Exact closing ${fmtFull(a.close)}.${state.cat !== "All" ? " Line items filtered to " + state.cat.toLowerCase() + "." : ""}</p>
@@ -468,14 +489,6 @@
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   });
 
-  // ---------- issues ----------
-  function renderIssues() {
-    const ks = rangeKeys();
-    const list = D.issues.slice().sort((a, b) => (a.month < b.month ? -1 : 1));
-    $("#issues").innerHTML = list.map((i) => `<li${ks.has(i.month) ? ' style="color:var(--ink)"' : ""}><b>${mLabel(i.month)}</b> · ${esc(i.kind)}: <span class="amt">${fmtFull(i.amount)}</span>${ks.has(i.month) ? ' <span class="tag proj">In period</span>' : ""}</li>`).join("") +
-      "<li>Rows 97–100 of the Cash Flow sheet show #REF! errors in 39 columns; they are reconciliation checks and are not used here.</li><li>The sheet's own check “Closing balance less ICICI statement balance” is ₹4.31 L off from Aug-25 to Jan-26 and ₹13.19 L off in Feb-26 week 1.</li>";
-  }
-
   // ---------- filters ----------
   const fFrom = $("#fFrom"), fTo = $("#fTo");
   fFrom.innerHTML = fTo.innerHTML = keys.map((k, i) => `<option value="${i}">${mLabel(k)}${D.months[i].status === "Monthly total only" ? " (totals only)" : D.months[i].status === "Partly projected" ? " (part projected)" : ""}</option>`).join("");
@@ -512,21 +525,20 @@
     kpis();
     if (opts.fromLoom) drawLoomColorsOnly(); else drawLoom();
     drawFlow(); drawBal(); actTable(); drawTop("topIn", "in"); drawTop("topOut", "out");
-    renderTable(); renderIssues();
+    renderTable();
   }
   function drawLoomColorsOnly() { /* brush already in place; nothing else depends on range */ }
 
   // ---------- boot ----------
-  const shell = document.querySelector(".shell");
-  const setShellH = () => document.documentElement.style.setProperty("--shell-h", (getComputedStyle(shell).position === "sticky" ? shell.offsetHeight : 0) + "px");
-  if (window.ResizeObserver) new ResizeObserver(setShellH).observe(shell); setShellH();
-  $("#srcLine").textContent = "Weeks Apr 2024 – Nov 2026";
+  const topBar = document.querySelector(".topbar");
+  const setTopH = () => document.documentElement.style.setProperty("--top-h", (getComputedStyle(topBar).position === "sticky" ? topBar.offsetHeight : 0) + "px");
+  if (window.ResizeObserver) new ResizeObserver(setTopH).observe(topBar); setTopH();
   $("#srcFile").textContent = D.source; $("#genDate").textContent = D.generated;
-  $("#mapInv").textContent = INV.join(", "); $("#mapFin").textContent = FIN.join(", ");
   setTab("stmt");
   update();
   let rT; window.addEventListener("resize", () => { clearTimeout(rT); rT = setTimeout(() => Object.values(charts).forEach((c) => c.resize()), 120); });
-  window.addEventListener("beforeprint", () => Object.values(charts).forEach((c) => c.resize()));
-  window.addEventListener("afterprint", () => Object.values(charts).forEach((c) => c.resize()));
+  const sparkInk = (col, area) => { if (charts.heroSpark) charts.heroSpark.setOption({ series: [{ lineStyle: { color: col }, itemStyle: { color: col }, areaStyle: { color: area } }] }); };
+  window.addEventListener("beforeprint", () => { sparkInk(C.accent, grad("rgba(109,74,255,.18)", "rgba(109,74,255,0)")); Object.values(charts).forEach((c) => c.resize()); });
+  window.addEventListener("afterprint", () => { sparkInk("#FFFFFF", grad("rgba(255,255,255,.32)", "rgba(255,255,255,0)")); Object.values(charts).forEach((c) => c.resize()); });
   window.__cf = { state, update, openMonth, openHead };
 })();
