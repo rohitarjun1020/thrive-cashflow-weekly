@@ -241,7 +241,7 @@
     $("#balHint").textContent = `${below} of ${pts.length} ${state.grain === "m" ? "month-ends" : "week-ends"} closed below the minimum of ${fmtL(state.min)}. Account-level, not filtered by category.`;
     c.setOption({
       animationDuration: 250,
-      grid: { left: 60, right: 16, top: 16, bottom: 34 },
+      grid: { left: 60, right: 30, top: 16, bottom: 34 },
       tooltip: {
         ...tipBase, trigger: "axis", axisPointer: { type: "line", lineStyle: { color: C.accent, type: [3, 3] } },
         formatter: (ps) => { const p = pts[ps[0].dataIndex]; return `<b>${esc(p.label)}</b>${p.sub ? ` <span style="opacity:.7">${esc(p.sub)}</span>` : ""}` + row("Closing balance", fmtFull(p.close)) + (p.close < state.min ? `<div style="color:${C.lossInk};font-weight:700;margin-top:4px">Below minimum by ${fmtFull(state.min - p.close)}</div>` : ""); }
