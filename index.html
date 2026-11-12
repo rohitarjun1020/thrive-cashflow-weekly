@@ -41,7 +41,7 @@
         <option value="Investing">Investing</option>
         <option value="Financing">Financing</option>
       </select>
-      <label class="minf ctl" for="fMin">Min <span>₹</span><input id="fMin" type="number" step="1" value="0" inputmode="decimal"><span>L</span></label>
+      <label class="minf ctl" for="fMin" title="Flag months whose closing balance falls below this amount. At ₹0 it marks months the bank account was overdrawn.">Alert below <span>₹</span><input id="fMin" type="number" step="1" value="0" inputmode="decimal" aria-describedby="minHelp"><span>L</span></label><span id="minHelp" class="sr">Flags months whose closing balance falls below this amount, in lakh. Zero means overdrawn.</span>
       <label class="switch" for="fProj"><input id="fProj" type="checkbox" checked><span class="track" aria-hidden="true"></span>Projections</label>
       <button type="button" class="btn ghost no-print" id="printBtn" aria-label="Print or save as PDF">
         <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M5 8V3h10v5M5 14H3V8h14v6h-2M6 11h8v6H6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
@@ -61,9 +61,9 @@
     <div class="card-head">
       <div>
         <h2 id="loomH">Weekly closing balance</h2>
-        <p class="hint no-print">Drag across the weeks to change the period.</p>
+        <p class="hint no-print">Each bar is one week's closing bank balance. Drag across the weeks to change the period.</p>
       </div>
-      <div class="legend-inline" aria-hidden="true"><span><i class="lg gain"></i>Above minimum</span><span><i class="lg loss"></i>Below minimum</span><span><i class="lg sel"></i>Selected period</span></div>
+      <div class="legend-inline" id="loomLegend" aria-hidden="true"></div>
     </div>
     <div id="loomChart" class="chart loom-chart" role="img" aria-label="Weekly closing balance bars; drag to select a period"></div>
   </section>

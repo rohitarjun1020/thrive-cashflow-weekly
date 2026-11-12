@@ -26,6 +26,9 @@
     return (v < 0 ? MINUS : "") + "₹" + Math.round(Math.abs(v)).toLocaleString("en-IN");
   }
   const fmtLk = (v) => { const t = (Math.abs(v) / 1e5).toFixed(2); return (v < 0 && t !== "0.00" ? MINUS : "") + t; };
+  // wording for the alert threshold: at ₹0 it simply means the account is overdrawn
+  const lowWord = () => (state.min === 0 ? "Overdrawn" : "Below " + fmtL(state.min));
+  const lowPhrase = () => (state.min === 0 ? "were overdrawn (below ₹0)" : "closed below your " + fmtL(state.min) + " alert level");
   const axisL = (v) => (v === 0 ? "0" : (v < 0 ? MINUS : "") + "₹" + Math.round(Math.abs(v) / 1e5) + "L");
 
   // ---------- indexes ----------
@@ -126,7 +129,7 @@
       toolbox: { show: false, feature: { brush: { type: ["lineX"] } } }
     }, { notMerge: false });
     c.dispatchAction({ type: "takeGlobalCursor", key: "brush", brushOption: { brushType: "lineX", brushMode: "single" } });
-    syncLoomBrush();
+    syncLoomBrush(); loomLegend();
     if (!c.__wired) {
       c.__wired = true;
       c.on("brushEnd", (p) => {
@@ -138,6 +141,10 @@
         update({ fromLoom: true });
       });
     }
+  }
+  function loomLegend() {
+    const el = document.getElementById("loomLegend");
+    if (el) el.innerHTML = `<span><i class="lg gain"></i>${state.min === 0 ? "In credit" : "At or above " + fmtL(state.min)}</span><span><i class="lg loss"></i>${lowWord()}</span><span><i class="lg sel"></i>Selected period</span>`;
   }
   function syncLoomBrush() {
     const c = charts.loomChart; if (!c) return;
@@ -160,9 +167,9 @@
     const avgNet = netAll / A.length;
     let runway, runwayD;
     if (last.close <= 0) { runway = "n/a"; runwayD = "Account overdrawn at period end · avg net " + fmtL(avgNet) + "/mo"; }
-    else if (last.close <= state.min) { runway = "0"; runwayD = "At or below the minimum balance"; }
+    else if (last.close <= state.min) { runway = "0"; runwayD = "At or below your " + fmtL(state.min) + " alert level"; }
     else if (avgNet >= 0) { runway = "Not burning"; runwayD = "Avg net cash flow " + fmtL(avgNet) + "/mo"; }
-    else { runway = ((last.close - state.min) / -avgNet).toFixed(1); runwayD = "Cash above minimum ÷ avg monthly burn " + fmtL(-avgNet); }
+    else { runway = ((last.close - state.min) / -avgNet).toFixed(1); runwayD = (state.min ? "Cash above the " + fmtL(state.min) + " alert level" : "Cash") + " ÷ avg monthly burn " + fmtL(-avgNet); }
     const below = last.close < state.min;
     const proj = r.some((i) => agg(i).status === "Partly projected");
     const catNote = state.cat === "All" ? "" : " · " + state.cat;
@@ -182,13 +189,13 @@
       { c: "k-in", ic: ic("in", "in"), k: "Total inflows" + catNote, v: fmtL(fi), d: r.length + (r.length === 1 ? " month" : " months") + " · avg " + fmtL(fi / r.length) + "/mo", t: fmtFull(fi) },
       { c: "k-out", ic: ic("out", "out"), k: "Total outflows" + catNote, v: fmtL(fo), d: "Avg " + fmtL(fo / r.length) + "/mo", t: fmtFull(fo) },
       { c: "k-net", ic: ic("net", net >= 0 ? "in" : "out"), k: "Net cash flow" + catNote, v: (net > 0 ? "+" : "") + fmtL(net), cls: net >= 0 ? "gain" : "loss", d: net >= 0 ? "Inflows exceeded outflows" : "Outflows exceeded inflows", t: fmtFull(net) },
-      { c: "k-close", ic: ic("close"), k: "Closing balance · end " + mLabel(last.key), v: fmtL(last.close), d: (below ? '<span class="tag loss">Below minimum</span> ' : "") + (proj ? '<span class="tag proj">Includes projection</span> ' : "") + "Exact " + fmtFull(last.close), t: fmtFull(last.close), hero: true },
+      { c: "k-close", ic: ic("close"), k: "Closing balance · end " + mLabel(last.key), v: fmtL(last.close), d: (below ? '<span class="tag loss">' + lowWord() + "</span> " : "") + (proj ? '<span class="tag proj">Includes projection</span> ' : "") + "Exact " + fmtFull(last.close), t: fmtFull(last.close), hero: true },
       { c: "k-run", ic: ic("run", "acc"), k: "Months of runway", v: runway, d: runwayD }
     ];
     const bridge = `Opening <b>${fmtL(first.open)}</b> + inflows <b>${fmtL(ai)}</b> − outflows <b>${fmtL(ao)}</b> + Razorpay movement <b>${fmtL(rz)}</b>` + (Math.abs(adj) >= 1 ? ` + workbook carry-forward <b>${fmtL(adj)}</b>` : "") + ` = closing <b>${fmtL(last.close)}</b>`;
     if (charts.heroSpark) { charts.heroSpark.dispose(); delete charts.heroSpark; }
     $("#kpis").innerHTML = K.map((x) => `<div class="kpi ${x.c}"${x.t ? ` title="${esc(x.k)}: ${esc(x.t)}"` : ""}><div class="k">${x.ic}${esc(x.k)}</div><div class="v num ${x.cls || ""}">${x.v}</div><div class="d">${x.d}</div>${x.hero ? '<div class="spark" id="heroSpark" aria-hidden="true"></div><p class="bridge">' + bridge + "</p>" : ""}</div>`).join("") +
-      `<div class="tile k-below"><div class="k">${ic("below", "out")}Months below minimum</div><div class="below-v">${belowN} <small>of ${A.length}</small></div><div class="dots" role="img" aria-label="${belowN} of ${A.length} month-ends below minimum">${A.map((a) => `<i class="${a.close < state.min ? "b" : ""}" title="${mLabel(a.key)}: ${fmtFull(a.close)}"></i>`).join("")}</div></div>`;
+      `<div class="tile k-below"><div class="k">${ic("below", "out")}${state.min === 0 ? "Months overdrawn" : "Months below " + fmtL(state.min)}</div><div class="below-v">${belowN} <small>of ${A.length}</small></div><div class="dots" role="img" aria-label="${belowN} of ${A.length} month-ends ${lowPhrase()}">${A.map((a) => `<i class="${a.close < state.min ? "b" : ""}" title="${mLabel(a.key)}: ${fmtFull(a.close)}"></i>`).join("")}</div></div>`;
     const sp = mk("heroSpark");
     sp.setOption({
       animation: false, grid: { left: 8, right: 8, top: 8, bottom: 4 },
@@ -238,13 +245,13 @@
     if (state.grain === "m") pts = range().map((i) => { const a = agg(i); return { label: mLabel(a.key), close: a.close, mi: i, sub: a.status !== "Actual" ? a.status : "" }; });
     else pts = weeksInRange().map((wi) => { const w = D.weeks[wi]; return { label: mLabel(w.key) + " " + w.label.replace(/^.*Week\s*/i, "W"), close: w.close, mi: weekMonth[wi], sub: w.days + (w.status === "Projection" ? " · projection" : "") }; });
     const below = pts.filter((p) => p.close < state.min).length;
-    $("#balHint").textContent = `${below} of ${pts.length} ${state.grain === "m" ? "month-ends" : "week-ends"} closed below the minimum of ${fmtL(state.min)}. Account-level, not filtered by category.`;
+    $("#balHint").textContent = `${below} of ${pts.length} ${state.grain === "m" ? "month-ends" : "week-ends"} ${lowPhrase()}. Account-level, not filtered by category.`;
     c.setOption({
       animationDuration: 250,
       grid: { left: 60, right: 30, top: 16, bottom: 34 },
       tooltip: {
         ...tipBase, trigger: "axis", axisPointer: { type: "line", lineStyle: { color: C.accent, type: [3, 3] } },
-        formatter: (ps) => { const p = pts[ps[0].dataIndex]; return `<b>${esc(p.label)}</b>${p.sub ? ` <span style="opacity:.7">${esc(p.sub)}</span>` : ""}` + row("Closing balance", fmtFull(p.close)) + (p.close < state.min ? `<div style="color:${C.lossInk};font-weight:700;margin-top:4px">Below minimum by ${fmtFull(state.min - p.close)}</div>` : ""); }
+        formatter: (ps) => { const p = pts[ps[0].dataIndex]; return `<b>${esc(p.label)}</b>${p.sub ? ` <span style="opacity:.7">${esc(p.sub)}</span>` : ""}` + row("Closing balance", fmtFull(p.close)) + (p.close < state.min ? `<div style="color:${C.lossInk};font-weight:700;margin-top:4px">${state.min === 0 ? "Overdrawn by " + fmtFull(-p.close) : "Below alert level by " + fmtFull(state.min - p.close)}</div>` : ""); }
       },
       xAxis: { ...xCat(pts.map((p) => p.label)), boundaryGap: false },
       yAxis: yAxisBase,
@@ -253,7 +260,7 @@
         areaStyle: { origin: "start", color: grad("rgba(109,74,255,.22)", "rgba(109,74,255,0)") },
         data: pts.map((p) => ({ value: p.close, itemStyle: { color: p.close < state.min ? C.loss : C.gain, borderColor: "#fff", borderWidth: 2 } })),
         markArea: { silent: true, itemStyle: { color: "rgba(229,72,77,.06)" }, data: [[{ yAxis: state.min }, { yAxis: "min" }]] },
-        markLine: { silent: true, symbol: "none", lineStyle: { color: C.lossInk, type: [5, 4], width: 1.2 }, label: { formatter: "Minimum " + fmtL(state.min), color: C.lossInk, fontFamily: FONT, fontWeight: 700, fontSize: 11, position: "insideStartTop" }, data: [{ yAxis: state.min }] }
+        markLine: { silent: true, symbol: "none", lineStyle: { color: C.lossInk, type: [5, 4], width: 1.2 }, label: { formatter: state.min === 0 ? "₹0 · overdrawn below this line" : "Alert level " + fmtL(state.min), color: C.lossInk, fontFamily: FONT, fontWeight: 700, fontSize: 11, position: "insideStartTop" }, data: [{ yAxis: state.min }] }
       }]
     }, { notMerge: true });
     c.off("click");
@@ -338,7 +345,7 @@
       <div><div class="k">Outflows</div><div class="v num">${fmtL(a.outflow)}</div></div>
       <div><div class="k">Net cash flow</div><div class="v num" style="color:${net >= 0 ? C.gainInk : C.lossInk}">${(net > 0 ? "+" : "") + fmtL(net)}</div></div>
       <div><div class="k">Razorpay movement</div><div class="v num">${fmtL(a.rzp)}</div></div>
-      <div><div class="k">Closing</div><div class="v num">${fmtL(a.close)}${a.close < state.min ? ' <span class="tag loss">Below min</span>' : ""}</div></div></div>
+      <div><div class="k">Closing</div><div class="v num">${fmtL(a.close)}${a.close < state.min ? ' <span class="tag loss">' + lowWord() + "</span>" : ""}</div></div></div>
       <p class="recon">${esc(a.status)}. Exact closing ${fmtFull(a.close)}.${state.cat !== "All" ? " Line items filtered to " + state.cat.toLowerCase() + "." : ""}</p>
       <h3>Line items from the cash-flow sheet</h3>
       ${heads.length ? `<div class="tbl-wrap"><table class="data"><thead><tr><th>Head</th><th class="num">Amount</th></tr></thead><tbody>${headRows(ins, 1)}${headRows(outs, -1)}</tbody></table></div>` : '<p class="empty">No line items for this filter.</p>'}`;
@@ -416,7 +423,7 @@
   }
   function renderStmt() {
     const { r, A, lines } = stmtModel();
-    const head = `<tr><th class="sticky">₹ lakh</th>${A.map((a, j) => `<th class="num"><button type="button" data-m="${r[j]}" title="Open ${mLabel(a.key)} line items">${mLabel(a.key)}${a.status === "Partly projected" ? "*" : ""}</button></th>`).join("")}<th class="num">Period</th></tr>`;
+    const head = `<tr><th class="sticky">₹ lakh</th>${A.map((a, j) => `<th class="num"><button type="button" data-m="${r[j]}" title="Open ${mLabel(a.key)} line items">${mLabel(a.key)}${a.status === "Partly projected" ? "*" : ""}</button></th>`).join("")}<th class="num" title="Opening and closing rows show the period's first opening and last closing; every other row is the sum of the months shown">Period total</th></tr>`;
     const cell = (v, l) => { const cls = Math.abs(v) < 0.5 ? "zero" : l.signed ? (v < 0 ? "neg" : "pos") : ""; return `<td class="num ${cls}" title="${fmtFull(v)}">${Math.abs(v) < 0.5 ? "–" : fmtLk(v)}</td>`; };
     const body = lines.map((l) => `<tr class="${l.kind === "sec" ? "sec" : l.kind === "grp" ? "grp" : l.kind === "grph" ? "grp clk" : l.kind === "tot" ? "tot" : "clk"}"${l.id ? ` data-h="${l.id}"` : ""}><td class="sticky">${esc(l.label)}${l.act && l.act !== "Operating" ? ` <span class="hint">· ${l.act}</span>` : ""}</td>${l.vals.map((v) => cell(v, l)).join("")}${cell(l.total, l)}</tr>`).join("");
     $("#paneStmt").innerHTML = `<table class="data"><thead>${head}</thead><tbody>${body}</tbody></table>` + (A.some((a) => a.status === "Partly projected") ? '<p class="hint" style="padding:8px 10px">* includes projected weeks.</p>' : "");
@@ -424,7 +431,7 @@
     $("#paneStmt").querySelectorAll("tr[data-h]").forEach((tr) => tr.addEventListener("click", () => openHead(tr.dataset.h)));
     $("#tblCount").textContent = lines.filter((l) => l.kind === "head" || l.kind === "grph").length + " heads × " + A.length + " months";
     $("#pager").innerHTML = "";
-    csvRows = [["Line", ...A.map((a) => a.key), "Period"]].concat(lines.map((l) => [l.label, ...l.vals.map((v) => Math.round(v * 100) / 100), Math.round(l.total * 100) / 100]));
+    csvRows = [["Line", ...A.map((a) => a.key), "Period total"]].concat(lines.map((l) => [l.label, ...l.vals.map((v) => Math.round(v * 100) / 100), Math.round(l.total * 100) / 100]));
   }
 
   function txList() {
@@ -457,12 +464,12 @@
     if (!cols.length) { $("#paneLl").innerHTML = '<p class="empty">The landlord sheet covers Mar-25 to Nov-26. Widen the period to see it.</p>'; $("#tblCount").textContent = ""; $("#pager").innerHTML = ""; csvRows = []; return; }
     const rows = L.rows.filter((r) => !s || (r.name + " " + r.property).toLowerCase().includes(s));
     const tot = cols.map((c) => rows.reduce((a, r) => a + r.pay[c.j], 0));
-    $("#paneLl").innerHTML = `<table class="data"><thead><tr><th class="sticky">Landlord</th><th>Property</th>${cols.map((c) => `<th class="num">${mLabel(c.k)}</th>`).join("")}<th class="num">Period</th></tr></thead><tbody>` +
+    $("#paneLl").innerHTML = `<table class="data"><thead><tr><th class="sticky">Landlord</th><th>Property</th>${cols.map((c) => `<th class="num">${mLabel(c.k)}</th>`).join("")}<th class="num" title="Sum of the months shown">Period total</th></tr></thead><tbody>` +
       rows.map((r) => { const sum = cols.reduce((a, c) => a + r.pay[c.j], 0); return `<tr><td class="sticky">${esc(r.name)}</td><td>${esc(r.property)}</td>${cols.map((c) => r.pay[c.j] ? `<td class="num">${fmtFull(r.pay[c.j])}</td>` : '<td class="num zero" title="No payment recorded">–</td>').join("")}<td class="num">${fmtFull(sum)}</td></tr>`; }).join("") +
       `<tr class="tot"><td class="sticky">Total</td><td></td>${tot.map((v) => `<td class="num">${fmtFull(v)}</td>`).join("")}<td class="num">${fmtFull(tot.reduce((a, b) => a + b, 0))}</td></tr></tbody></table><p class="hint" style="padding:8px 10px">From the "Landlord Rent Payments" sheet; "–" means no payment recorded that month.</p>`;
     $("#tblCount").textContent = rows.length + " landlords × " + cols.length + " months";
     $("#pager").innerHTML = "";
-    csvRows = [["Landlord", "Property", ...cols.map((c) => c.k), "Period"]].concat(rows.map((r) => [r.name, r.property, ...cols.map((c) => r.pay[c.j]), cols.reduce((a, c) => a + r.pay[c.j], 0)]));
+    csvRows = [["Landlord", "Property", ...cols.map((c) => c.k), "Period total"]].concat(rows.map((r) => [r.name, r.property, ...cols.map((c) => r.pay[c.j]), cols.reduce((a, c) => a + r.pay[c.j], 0)]));
   }
   function renderChips() {
     const chips = [];
@@ -516,7 +523,7 @@
       const on = b.dataset.p === "all" ? state.from === 0 && state.to === keys.length - 1 : b.dataset.p === keys[state.from] + "," + keys[state.to];
       b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on));
     });
-    $("#printScope").textContent = `Period ${mLabel(keys[state.from])} to ${mLabel(keys[state.to])} · ${state.cat === "All" ? "All categories" : state.cat} · Minimum balance ${fmtL(state.min)} · Nov-26 projections ${state.proj ? "included" : "excluded"}`;
+    $("#printScope").textContent = `Period ${mLabel(keys[state.from])} to ${mLabel(keys[state.to])} · ${state.cat === "All" ? "All categories" : state.cat} · Alert level ${state.min === 0 ? "₹0 (overdrawn)" : fmtL(state.min)} · Nov-26 projections ${state.proj ? "included" : "excluded"}`;
   }
 
   function update(opts) {
