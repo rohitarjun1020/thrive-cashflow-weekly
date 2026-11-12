@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thrive Cash Flow</title>
+<meta name="description" content="Weekly and monthly cash flow for Thrive Living (Thrivescape Ventures Pvt Ltd), from the CFO team's cash-flow workbook.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2313261C'/%3E%3Cpath d='M7 22V14M12 22V9M17 22V16M22 22V11' stroke='%23F3EDE2' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M6 25h20' stroke='%236A3CF0' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preload" href="fonts/public-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="shell">
+  <div class="shell-top wrap">
+    <div class="brand">
+      <h1>Thrive Living <span>Cash flow</span></h1>
+      <p class="sub">Thrivescape Ventures Pvt Ltd · ICICI current account + Razorpay · <span id="srcLine"></span></p>
+    </div>
+    <div class="shell-actions no-print">
+      <button type="button" class="btn ghost-dark" id="printBtn">Print / PDF</button>
+    </div>
+  </div>
+  <form class="filters wrap" id="filters" aria-label="Filters" onsubmit="return false">
+    <div class="f">
+      <label for="fFrom">From</label>
+      <select id="fFrom"></select>
+    </div>
+    <div class="f">
+      <label for="fTo">To</label>
+      <select id="fTo"></select>
+    </div>
+    <div class="f presets" role="group" aria-label="Quick periods">
+      <span class="lbl">Period</span>
+      <div class="seg" id="presets">
+        <button type="button" data-p="2024-04,2025-03">FY24-25</button>
+        <button type="button" data-p="2025-04,2026-03">FY25-26</button>
+        <button type="button" data-p="2026-04,2026-11">FY26-27 YTD</button>
+        <button type="button" data-p="all">All</button>
+      </div>
+    </div>
+    <div class="f">
+      <label for="fCat">Category</label>
+      <select id="fCat">
+        <option value="All">All categories</option>
+        <option value="Operating">Operating</option>
+        <option value="Investing">Investing</option>
+        <option value="Financing">Financing</option>
+      </select>
+    </div>
+    <div class="f">
+      <label for="fMin">Minimum balance (₹ L)</label>
+      <input id="fMin" type="number" step="1" value="0" inputmode="decimal">
+    </div>
+    <div class="f check">
+      <input id="fProj" type="checkbox" checked>
+      <label for="fProj">Include Nov-26 projections</label>
+    </div>
+  </form>
+</header>
+
+<main class="wrap">
+  <p class="print-only print-scope" id="printScope"></p>
+
+  <section class="loom" aria-labelledby="loomH">
+    <div class="sec-head">
+      <h2 id="loomH">Weekly closing balance, Apr 2024 – Nov 2026</h2>
+      <p class="hint no-print">Drag across the weeks to set the period. Red weeks closed below the minimum balance.</p>
+    </div>
+    <div id="loomChart" class="chart loom-chart" role="img" aria-label="Weekly closing balance bars; drag to select a period"></div>
+  </section>
+
+  <section class="kpis" aria-label="Key figures" id="kpis"></section>
+  <p class="bridge" id="bridge"></p>
+  <p class="scope-note" id="scopeNote" hidden></p>
+
+  <div class="grid two">
+    <section class="panel" aria-labelledby="flowH">
+      <div class="sec-head">
+        <h2 id="flowH">Monthly inflows and outflows</h2>
+        <p class="hint">Outflows plotted below zero. Line is net cash flow. Click a month for its line items.</p>
+      </div>
+      <div id="flowChart" class="chart"></div>
+    </section>
+    <section class="panel" aria-labelledby="balH">
+      <div class="sec-head row">
+        <h2 id="balH">Running cash balance</h2>
+        <div class="seg small no-print" id="balGrain" role="group" aria-label="Balance granularity">
+          <button type="button" data-g="m" class="on" aria-pressed="true">Monthly</button>
+          <button type="button" data-g="w" aria-pressed="false">Weekly</button>
+        </div>
+      </div>
+      <p class="hint" id="balHint"></p>
+      <div id="balChart" class="chart"></div>
+    </section>
+  </div>
+
+  <div class="grid three">
+    <section class="panel" aria-labelledby="actH">
+      <div class="sec-head">
+        <h2 id="actH">By activity</h2>
+        <p class="hint">Click a row to filter the dashboard to it.</p>
+      </div>
+      <div id="actTable"></div>
+    </section>
+    <section class="panel" aria-labelledby="topInH">
+      <div class="sec-head">
+        <h2 id="topInH">Top inflow heads</h2>
+        <p class="hint">Click a head for its transactions.</p>
+      </div>
+      <div id="topIn" class="chart short"></div>
+    </section>
+    <section class="panel" aria-labelledby="topOutH">
+      <div class="sec-head">
+        <h2 id="topOutH">Top outflow heads</h2>
+        <p class="hint">Click a head for its transactions.</p>
+      </div>
+      <div id="topOut" class="chart short"></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="tblH" id="tables">
+    <div class="sec-head row">
+      <h2 id="tblH">Table view</h2>
+      <div class="tabs no-print" role="tablist" aria-label="Table">
+        <button type="button" role="tab" id="tabStmt" aria-selected="true" aria-controls="paneStmt">Cash-flow statement</button>
+        <button type="button" role="tab" id="tabTx" aria-selected="false" aria-controls="paneTx">Transactions</button>
+        <button type="button" role="tab" id="tabLl" aria-selected="false" aria-controls="paneLl">Landlord rent</button>
+      </div>
+    </div>
+    <div class="tbl-tools no-print">
+      <input type="search" id="tblSearch" placeholder="Search heads, descriptions, vendors, amounts" aria-label="Search table">
+      <span class="count" id="tblCount"></span>
+      <button type="button" class="btn" id="csvBtn">Export CSV</button>
+    </div>
+    <div class="chips no-print" id="txChips"></div>
+    <div id="paneStmt" role="tabpanel" aria-labelledby="tabStmt" class="tbl-wrap"></div>
+    <div id="paneTx" role="tabpanel" aria-labelledby="tabTx" class="tbl-wrap" hidden></div>
+    <div id="paneLl" role="tabpanel" aria-labelledby="tabLl" class="tbl-wrap" hidden></div>
+    <div class="pager no-print" id="pager"></div>
+  </section>
+
+  <section class="panel notes" aria-labelledby="notesH">
+    <h2 id="notesH">Data notes</h2>
+    <div class="notes-grid">
+      <div>
+        <h3>Gaps in the source workbook</h3>
+        <ul id="issues"></ul>
+      </div>
+      <div>
+        <h3>How the figures are built</h3>
+        <ul>
+          <li>Monthly figures are the workbook's own monthly <em>Total</em> columns on the <em>Cash Flow</em> sheet; weekly figures are its week columns. Nothing is estimated.</li>
+          <li>Closing balance = opening + inflows − outflows + Razorpay balance movement (row 91). Gaps where a week opens away from the prior close show as "carry-forward adjustments".</li>
+          <li>Jan–Mar 2024 exist only as monthly totals. Nov-26 weeks 3–5 (13–30 Nov) are typed-in projections.</li>
+          <li>Operating / investing / financing is a proposed mapping, not a tag in the file. Investing: <span id="mapInv"></span>. Financing: <span id="mapFin"></span>. Everything else is operating. The file's "Renovation Expense" heading is a subtotal of maintenance, housekeeping and supplies, so it is classed operating.</li>
+          <li>Months of runway needs a positive cash balance. While the account is overdrawn it shows n/a; no overdraft limit is recorded in the file.</li>
+          <li>Transactions come from the <em>Bank Statements FY 24-26</em> and <em>Razorpay statements</em> sheets. Their totals can differ from the cash-flow sheet, which carries manual adjustments; each drill-down shows both.</li>
+          <li>No budget, customer-wise receipts or forecast beyond the file's own Nov-26 projections exist in the workbook, so none are shown.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <footer class="foot">Prepared by the Strategy Studio Labs CFO team from <span id="srcFile"></span>. Generated <span id="genDate"></span>.</footer>
+</main>
+
+<aside class="drawer" id="drawer" aria-labelledby="drawerTitle" hidden>
+  <div class="drawer-head">
+    <h2 id="drawerTitle"></h2>
+    <button type="button" class="btn icon" id="drawerClose" aria-label="Close details">
+      <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+</aside>
+
+<div class="tip" id="htmlTip" role="tooltip" hidden></div>
+
+<script src="vendor/echarts-5.5.1.min.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
