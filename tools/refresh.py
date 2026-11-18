@@ -152,12 +152,22 @@ def extract(src):
             mm = re.match(r"(\d{1,2})/(\d{1,2})/(\d{4})", v.strip())
             if mm: return "%s-%02d-%02d" % (mm.group(3), int(mm.group(2)), int(mm.group(1)))
         return ""
+    swapped = [0]
+    def txdate(month, d):
+        # some statement dates were typed day/month the wrong way round (12 Jan stored as 1 Dec);
+        # when the date falls outside the row's own month and swapping fixes that, swap it
+        if not d or d[:7] == month: return d
+        alt = "%s-%s-%s" % (d[:4], d[8:10], d[5:7])
+        try: datetime.date.fromisoformat(alt)
+        except ValueError: return d
+        if alt[:7] == month: swapped[0] += 1; return alt
+        return d
     tx = []
     for r in wb["Bank Statements FY 24-26"].iter_rows(min_row=5, values_only=True):
         if not isinstance(r[5], (int, float)) or not isinstance(r[1], datetime.datetime): continue
         sign = 1 if str(r[4]).strip().upper() == "CR" else -1
         cat = str(r[7]).strip() if r[7] else ""
-        tx.append([r[1].strftime("%Y-%m"), iso(r[2]), "B", (str(r[3]) or "").strip()[:80], round(sign * r[5], 2), cat, hid(cat), (str(r[8]).strip() if r[8] else "")])
+        tx.append([r[1].strftime("%Y-%m"), txdate(r[1].strftime("%Y-%m"), iso(r[2])), "B", (str(r[3]) or "").strip()[:80], round(sign * r[5], 2), cat, hid(cat), (str(r[8]).strip() if r[8] else "")])
     for r in wb["Razorpay statements"].iter_rows(min_row=5, values_only=True):
         if not isinstance(r[4], (int, float)) or not isinstance(r[1], datetime.datetime): continue
         cat = str(r[5]).strip() if r[5] else ""
@@ -186,6 +196,8 @@ def extract(src):
     act = [w for w in weeks if w["actual"]]
     meta = dict(source=os.path.basename(src), saved=saved.strftime("%Y-%m-%dT%H:%M"),
                 asOf=act[-1]["end"] if act else None, lastActualWeek=act[-1]["label"] if act else None,
+                statementsTo=max((t[1] for t in tx if t[2] == "B" and t[1] and t[1] <= saved.strftime("%Y-%m-%d")), default=None),
+                datesSwapped=swapped[0],
                 generated=datetime.datetime.now().strftime("%Y-%m-%dT%H:%M"), spend=[dict(id=k, name=n, rows=rows) for k, n, rows in SPEND])
     data = dict(meta=meta, source=meta["source"], generated=meta["generated"][:10], heads=heads, months=months, weeks=weeks,
                 issues=issues, memo=memo, tx=tx, landlords=dict(months=lmonths, rows=landlords))

@@ -188,6 +188,39 @@ async (page) => {
     ok("Ask AI: " + q, !miss.length, "missing " + miss.join(", ") + " in: " + a.slice(0, 160));
   }
   ok("Ask Claude link shown", await page.isVisible("#askClaude"));
+  {
+    const loan = await page.evaluate(() => { const m = window.CF.months.find((x) => x.key === "2026-03"); const v = (m.v.r14 || 0) + (m.v.r15 || 0); return "₹" + (v / 1e5).toFixed(2) + " L"; });
+    await page.fill("#askIn", "How much loan did we receive in March 2026?"); await page.press("#askIn", "Enter"); await page.waitForTimeout(180);
+    const a = await page.$$eval("#askLog .msg.bot", (els) => els[els.length - 1].textContent);
+    ok("Ask AI: loans received is the loan inflow, not finance cost", a.includes(loan) && /Loans received/.test(a), a.slice(0, 120));
+  }
+
+  /* ---------- reported problems stay fixed ---------- */
+  await setHash("from=2026-04&to=2026-11&cat=All&min=-20&proj=0");
+  {
+    const close = await page.$eval("#tags .tag:last-child", (e) => e.textContent);
+    ok("negative alert: an overdrawn closing is never 'In credit'", /Overdrawn/i.test(close) && !/In credit/i.test(close), close.slice(0, 160));
+    ok("negative alert: runway talks about headroom to the alert level", /above your −₹20\.00 L alert level|Already below/.test(close), close.slice(0, 200));
+  }
+  await setHash("from=2026-04&to=2026-11&cat=All&min=0&proj=1&g=m");
+  {
+    const labels = await page.$$eval("#cfChart svg text.ax", (els) => els.map((e) => e.textContent));
+    ok("monthly chart labels every month (Oct'26 present)", labels.includes("Oct'26") && labels.includes("Nov'26"), labels.join(","));
+    const solid = await page.$$eval("#cfChart svg .hit", (gs) => gs[gs.length - 1].querySelectorAll("path.bi:not([fill^='url'])").length);
+    ok("part-planned Nov'26 bar shows its actual part solid", solid >= 1, solid);
+  }
+  await setHash("from=2024-04&to=2026-11&cat=All&min=0&proj=1");
+  {
+    const spendRent = await page.$eval("#spend .sp", (e) => e.querySelector(".am").textContent);
+    const llPaid = await page.$$eval("#llFigs .fig", (fs) => fs[2].querySelector("b").textContent);
+    ok("landlord rent is the same in Spend and Landlords cards", spendRent === llPaid, spendRent + " vs " + llPaid);
+  }
+  await setHash("from=2026-04&to=2026-11&cat=All&min=0&proj=1&view=whatif");
+  ok("What-if says the account is already overdrawn at the start", /Already overdrawn at the start/.test(await page.textContent("#wiSub")), await page.textContent("#wiSub"));
+  await setHash("from=2026-04&to=2026-11&cat=All&min=0&proj=1");
+  ok("header gives the bank statements' last date", /bank statements to 11 Nov/.test(await page.textContent("#asOf")), await page.textContent("#asOf"));
+  await page.click("#tabTx"); await page.fill("#regSearch", "PAYROLL/IDFB0020101"); await page.waitForTimeout(400);
+  { const c = await page.textContent("#regCount"); ok("singular '1 line'", !/\b1 lines\b/.test(c), c); }
 
   /* ---------- keyboard ---------- */
   await setHash("from=2026-04&to=2026-11&cat=All&min=0&proj=1");

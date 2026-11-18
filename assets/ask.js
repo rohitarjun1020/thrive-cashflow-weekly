@@ -133,6 +133,14 @@
       return ans({ html: `<p>Landlord rent commitment is <b>${esc(L(ll.commit))} a month</b> across ${ll.props.length} properties. In ${esc(T.monthLong(ll.month))} Thrive paid ${esc(L(ll.total))}.</p>${bars(ll.props.map((x) => ({ name: x.name, v: x.commit })))}${table(["Property", "Landlords", "Monthly rent", "Paid " + T.monthLabel(ll.month)], ll.props.map((x) => [esc(x.name), x.rows.length, esc(I(x.commit)), esc(I(x.v))]), [1, 2, 3])}${meta("Landlord Rent Payments sheet. Monthly rent is each landlord's latest regular payment to " + T.monthLong(ll.month) + ".")}`,
         });
     }
+    function loansInAns(q) { // loans received: the inflow heads named "loan" (Company loan, Director Loan)
+      const ms = findMonths(q), fy = findFY(q);
+      const sel = ms.length ? ms : fy ? fy.months : fyMonths(curFY());
+      const name = ms.length ? span(ms) : fy ? fy.name : fyName(curFY()) + " to date";
+      const hs = T.HEADS.filter((h) => h.dir === "in" && /loan/i.test(h.name));
+      const t = T.totals(sel), rows = hs.map((h) => ({ h, v: t.v[h.id] || 0 })), tot = rows.reduce((a, r) => a + r.v, 0);
+      return ans({ html: `<p>Loans received, ${esc(name)}: <b>${esc(L(tot))}</b> (${esc(I(tot))}).</p>${table(["Line", "Amount"], rows.map((r) => [esc(r.h.name), esc(I(r.v))]), [1])}${sel.length > 1 ? bars(sel.map((m) => ({ name: m.label, v: hs.reduce((a, h) => a + (m.v[h.id] || 0), 0), cls: "in" }))) : ""}${meta("Cash Flow sheet rows " + hs.map((h) => h.row).join(" and ") + " (money in), month Total columns. " + statusOf(sel) + " Loan repayments and interest are under Finance cost.")}` });
+    }
     function spendAns(q) {
       const ms = findMonths(q), fy = findFY(q), w = findWeek(q);
       const sel = ms.length ? ms : fy ? fy.months : fyMonths(curFY());
@@ -212,6 +220,7 @@
         if (has(q, "opening")) return openingAns(q);
         if (has(q, "closing", "balance", "cash position", "how much cash", "bank balance")) return closing(q);
         if (has(q, "biggest", "largest", "highest", "most expensive", "top payment", "top expense")) return biggestAns(q);
+        if (/\bloans?\b/.test(q) && has(q, "receiv", " got", "took", "taken", "came in", "inflow", "raised", "borrow", "brought in", "infus")) return loansInAns(q);
         if (has(q, "category", "categories", "breakdown", "break down", "split") || findGroup(q) || findHead(q) || has(q, " spend", " spent", "expense", "cost")) {
           if (has(q, "money in", "inflow", "received", "income") && !findGroup(q)) return flowsAns(q, "in");
           return spendAns(q);

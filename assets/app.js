@@ -51,6 +51,8 @@
   const catName = (c) => (c === "All" ? "All categories" : T.ACTS.includes(c) ? c + " activity" : T.SP[c] ? T.SP[c].name : c);
   const periodTxt = () => { const ms = monthsSel(); return ms.length ? (ms[0].key === ms[ms.length - 1].key ? ms[0].long : `${ms[0].label} to ${ms[ms.length - 1].label}`) : ""; };
   const lowWord = () => (S.min ? "Below " + L(S.min) : "Overdrawn");
+  const alertStamps = (v) => [v < 0 ? stamp("od", "Overdrawn") : "", S.min && v < S.min ? stamp("od", "Below " + L(S.min)) : ""].filter(Boolean).join(" ");
+  const balStamps = (v) => alertStamps(v) || stamp("ac", "In credit");
   const stamp = (kind, txt) => `<span class="stamp ${kind}">${esc(txt)}</span>`;
   function toast(t) { const e = $("#toast"); e.textContent = t; e.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => (e.hidden = true), 2400); }
   const icon = {
@@ -101,7 +103,7 @@
     const h = new Date().getHours();
     $("#greet").textContent = (h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening") + " · " + new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "short", year: "numeric" });
     const sv = T.meta.saved ? new Date(T.meta.saved) : null;
-    $("#asOf").textContent = `Actuals to ${T.lastActual.long} · file saved ${sv ? sv.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) + ", " + sv.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }) : ""}` + (T.plannedW.length ? ` · planned to ${T.plannedW[T.plannedW.length - 1].long}` : "");
+    $("#asOf").textContent = `Actual weeks to ${T.lastActual.long}${T.meta.statementsTo ? " (bank statements to " + new Date(T.meta.statementsTo + "T00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" }) + ")" : ""} · file saved ${sv ? sv.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) + ", " + sv.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" }) : ""}` + (T.plannedW.length ? ` · planned to ${T.plannedW[T.plannedW.length - 1].long}` : "");
     const v = T.verdict(S.min);
     $("#verdict").textContent = v.text;
 
@@ -111,18 +113,20 @@
     const st = (pl) => (pl ? stamp("mx", "Incl. planned") : stamp("ac", "Actual"));
     const avgNet = tAll.net / Math.max(ms.length, 1);
     let runway;
-    if (tAll.close < S.min) runway = `Runway: not applicable while ${S.min ? "below the alert level" : "overdrawn"}`;
-    else if (avgNet >= 0) runway = "Runway: cash grew on average in this period";
-    else runway = `Runway: ${((tAll.close - S.min) / -avgNet).toFixed(1)} months at the average monthly burn of ${L(-avgNet)}`;
+    const months = (x) => (x > 36 ? "over 3 years" : "about " + x.toFixed(1) + " months");
+    if (tAll.close < S.min) runway = S.min ? `Already below your ${L(S.min)} alert level` : "Runway: not applicable while overdrawn";
+    else if (avgNet >= 0) runway = (tAll.close < 0 ? "Overdrawn, but " : "") + "cash grew on average in this period";
+    else if (S.min) runway = `${L(tAll.close - S.min)} above your ${L(S.min)} alert level: ${months((tAll.close - S.min) / -avgNet)} at the average monthly burn of ${L(-avgNet)}`;
+    else runway = `Runway: ${months(tAll.close / -avgNet)} at the average monthly burn of ${L(-avgNet)}`;
     const fl = S.cat !== "All" ? `<span class="s">${esc(catName(S.cat))} only</span>` : "";
     const rent = t.v.r11 || 0, dep = t.v.r12 || 0;
     const firstOpenTxt = ms[0] ? (ms[0].weeks.length ? W[ms[0].weeks[0]].short.split("–")[0].replace(/^(\d+)$/, "$1 " + T.MON[+ms[0].key.slice(5) - 1]) : ms[0].label) : "";
     const tags = [
-      { lb: "Opening · " + (ms[0] ? ms[0].label : ""), v: L(tAll.open), cls: tAll.open < 0 ? "neg" : "", st: tAll.open < S.min ? stamp("od", lowWord()) : stamp("ac", "Actual"), s: "Bank balance at the start of " + (ms[0] ? ms[0].long : "the period") },
+      { lb: "Opening · " + (ms[0] ? ms[0].label : ""), v: L(tAll.open), cls: tAll.open < 0 ? "neg" : "", st: balStamps(tAll.open), s: "Bank balance at the start of " + (ms[0] ? ms[0].long : "the period") },
       { lb: "Money in", v: L(t.in), cls: "", st: st(planned), s: S.cat === "All" ? `Rent ${L(rent)} · deposits ${L(dep)}` : catName(S.cat) },
       { lb: "Money out", v: L(t.out), cls: "", st: st(planned), s: S.cat === "All" ? `Landlord rent ${L(T.gsum(t.v, "rent"))}` : catName(S.cat) },
       { lb: "Net cash flow", v: (t.net > 0 ? "+" : "") + L(t.net), cls: t.net < 0 ? "neg" : t.net > 0 ? "pos" : "", st: st(planned), s: t.net < 0 ? "More went out than came in" : "More came in than went out" },
-      { lb: "Closing · " + (closeWeek ? closeWeek.short : lastM ? lastM.label : ""), v: L(tAll.close), cls: tAll.close < 0 ? "neg" : "", st: (closeWeek && !closeWeek.actual ? stamp("pl", "Planned") + " " : "") + (tAll.close < S.min ? stamp("od", lowWord()) : stamp("ac", "In credit")), s: runway },
+      { lb: "Closing · " + (closeWeek ? closeWeek.short : lastM ? lastM.label : ""), v: L(tAll.close), cls: tAll.close < 0 ? "neg" : "", st: (closeWeek && !closeWeek.actual ? stamp("pl", "Planned") + " " : "") + balStamps(tAll.close), s: runway },
     ];
     $("#tags").innerHTML = tags.map((x) => `<div class="tag"><span class="lb">${esc(x.lb)}</span><b class="v ${x.cls}">${esc(x.v)}</b>${x.st}<span class="s">${esc(x.s)}</span></div>`).join("");
     if (S.cat !== "All") $("#tags").insertAdjacentHTML("beforeend", "");
@@ -136,18 +140,18 @@
     const room = Math.max(4, Math.floor((($("#rack").clientWidth || 600) + 12) / 86));
     const ws = T.actualW.slice(-Math.max(3, room - T.plannedW.length)).concat(T.plannedW);
     $("#rack").innerHTML = ws.map((w) => {
-      const bad = w.close < S.min, cls = w.actual ? (bad ? "bad" : "ok") : "pl" + (bad ? " badp" : "");
+      const bad = w.close < S.min, od = !bad && w.close < 0, cls = w.actual ? (bad ? "bad" : od ? "odw" : "ok") : "pl" + (bad || od ? " badp" : "");
       const here = w === T.lastActual ? " here" : "";
-      return `<div class="peg"><button type="button" class="kt ${cls}${here}" data-w="${w.i}" aria-label="${esc(w.long)}: closing ${esc(L(w.close))}, ${w.actual ? "actual" : "planned"}${bad ? ", " + lowWord().toLowerCase() : ""}">${esc(w.short)}<b>${esc(T.lakhNum(w.close))}</b><small>${w.actual ? (here ? "Latest" : "Actual") : "Planned"}</small></button></div>`;
+      return `<div class="peg"><button type="button" class="kt ${cls}${here}" data-w="${w.i}" aria-label="${esc(w.long)}: closing ${esc(L(w.close))}, ${w.actual ? "actual" : "planned"}${bad ? ", " + lowWord().toLowerCase() : od ? ", overdrawn" : ""}">${esc(w.short)}<b>${esc(T.lakhNum(w.close))}</b><small>${w.actual ? (here ? "Latest" : "Actual") : "Planned"}</small></button></div>`;
     }).join("");
-    $("#rackLegend").innerHTML = `<span><i class="sw ok"></i>${S.min ? "At or above " + esc(L(S.min)) : "In credit"}</span><span><i class="sw bad"></i>${esc(lowWord())}</span><span><i class="sw plan"></i>Planned</span>`;
+    $("#rackLegend").innerHTML = `<span><i class="sw ok"></i>${S.min > 0 ? "At or above " + esc(L(S.min)) : "In credit"}</span>${S.min < 0 ? `<span><i class="sw odw"></i>Overdrawn, above ${esc(L(S.min))}</span>` : ""}<span><i class="sw bad"></i>${esc(lowWord())}</span><span><i class="sw plan"></i>Planned</span>`;
     const el = $("#rack"), here = el.querySelector(".kt.here"); el.scrollLeft = here ? Math.max(0, here.parentElement.offsetLeft - el.offsetLeft - 6) : el.scrollWidth;
     const next = T.plannedW[0];
     const card = (w, title) => {
       if (!w) return "";
-      const bad = w.close < S.min;
+      const bad = w.close < S.min || w.close < 0, st = alertStamps(w.close);
       const lines = T.topHeads(w.v, "out", 3).map((h) => `<li><span>${esc(h.name)}</span><b>${esc(L(h.v))}</b></li>`).join("");
-      return `<button type="button" class="rw" data-w="${w.i}"><span class="rw-h">${esc(title)} <span class="stamp ${w.actual ? "ac" : "pl"}">${w.actual ? "Actual" : "Planned"}</span>${bad ? ` <span class="stamp od">${esc(lowWord())}</span>` : ""}</span>
+      return `<button type="button" class="rw" data-w="${w.i}"><span class="rw-h">${esc(title)} <span class="stamp ${w.actual ? "ac" : "pl"}">${w.actual ? "Actual" : "Planned"}</span>${st ? " " + st : ""}</span>
         <span class="rw-d">${esc(w.long)}</span>
         <span class="rw-f"><span>In <b>${esc(L(w.inflow))}</b></span><span>Out <b>${esc(L(w.outflow))}</b></span><span>Closes <b class="${bad ? "neg" : ""}">${esc(L(w.close))}</b></span></span>
         <ul>${lines}</ul></button>`;
@@ -167,7 +171,11 @@
     const g = S.grain || (ws.length > 40 || ($("#cfChart").clientWidth || 600) < 560 ? "m" : "w");
     $$("#grain button").forEach((b) => { b.classList.toggle("on", b.dataset.g === g); b.setAttribute("aria-pressed", b.dataset.g === g); });
     if (g === "w") return ws.map((w) => { const f = T.flows(w, S.cat); return { kind: "w", ref: w, label: w.short, tip: w.long, in: f.in, out: f.out, planned: !w.actual }; });
-    return monthsSel().map((m) => { const f = T.flows(m, S.cat); return { kind: "m", ref: m, label: m.label, tip: m.long + (m.partial ? " (actual weeks only)" : !m.actual ? " (includes planned weeks)" : ""), in: f.in, out: f.out, planned: !m.actual && !m.partial }; });
+    return monthsSel().map((m) => {
+      const f = T.flows(m, S.cat), planned = !m.actual && !m.partial;
+      let inA = 0, outA = 0; if (planned) m.weeks.forEach((i) => { if (W[i].actual) { const x = T.flows(W[i], S.cat); inA += x.in; outA += x.out; } });
+      return { kind: "m", ref: m, label: m.label, tip: m.long + (m.partial ? " (actual weeks only)" : planned ? (inA || outA ? " (actual weeks plus planned)" : " (planned)") : ""), in: f.in, out: f.out, inA, outA, planned };
+    });
   }
   function renderCF() {
     const items = cfItems();
@@ -222,7 +230,7 @@
     const lm = T.landlordMonth(), ll = T.landlords(lm), lmTxt = T.monthLabel(lm);
     const ms = monthsSel(), t = T.totals(ms), cov = T.cover(t.v);
     $("#llSub").textContent = `Monthly commitment is each landlord's latest regular rent in the Landlord Rent Payments sheet, to ${T.monthLong(lm)}. Rent cover uses the selected period.`;
-    $("#llFigs").innerHTML = `<div class="fig"><span>Monthly commitment</span><b>${esc(L(ll.commit))}</b></div><div class="fig"><span>Rent collected ÷ rent paid, ${esc(periodTxt())}</span><b class="${cov == null ? "" : cov >= 1 ? "pos" : "neg"}">${cov == null ? "–" : cov.toFixed(2) + "×"}</b></div><div class="fig"><span>Paid to landlords in period</span><b>${esc(L(T.rentOut(t.v)))}</b></div>`;
+    $("#llFigs").innerHTML = `<div class="fig"><span>Monthly commitment</span><b>${esc(L(ll.commit))}</b></div><div class="fig"><span>Rent collected ÷ rent paid, ${esc(periodTxt())}</span><b class="${cov == null ? "" : cov >= 1 ? "pos" : "neg"}">${cov == null ? "–" : cov.toFixed(2) + "×"}</b></div><div class="fig"><span>Paid to landlords in period</span><b>${esc(L(T.rentOut(t.v)))}</b>${t.v.r27 ? `<small class="hint">incl. ${esc(L(t.v.r27))} duplicate payment (Cash Flow row 27)</small>` : ""}</div>`;
     C.building($("#building"), ll.props, { fmt: L, inr: I, monthTxt: lmTxt, label: "Monthly rent commitment by property, drawn as floors" });
     // table: landlord months inside the selected period, else the last six
     let cols = ll.months.filter((k) => k >= S.from && k <= S.to);
@@ -253,7 +261,7 @@
       h += `<tr class="${cls}${hl}" ${r.k === "grp" ? `data-g="${r.id}" tabindex="0" aria-expanded="${S.expand || S.open.has(r.id)}"` : ""}><td class="sticky">${esc(r.name)}</td>${r.v.map((v) => `<td class="num ${Math.abs(v) < 500 ? "dim" : v < 0 && (r.k === "tot" || r.k === "adj") ? "neg" : ""}">${Math.abs(v) < 500 ? "–" : esc(T.lakhNum(v))}</td>`).join("")}<td class="num pt ${r.pt < 0 && r.k === "tot" ? "neg" : ""}">${Math.abs(r.pt) < 500 ? "–" : esc(T.lakhNum(r.pt))}</td></tr>`;
     });
     $("#paneStmt").innerHTML = h + "</tbody></table>";
-    $("#regCount").textContent = `${ms.length} month${ms.length === 1 ? "" : "s"}${q ? ` · ${n} matching lines` : ""}`;
+    $("#regCount").textContent = `${ms.length} month${ms.length === 1 ? "" : "s"}${q ? ` · ${n} matching line${n === 1 ? "" : "s"}` : ""}`;
     $("#pager").innerHTML = "";
   }
   function txRows() {
@@ -275,7 +283,7 @@
     const arrow = (k) => (S.sort.k === k ? (S.sort.d > 0 ? " ↑" : " ↓") : "");
     $("#paneTx").innerHTML = `<table class="data"><thead><tr><th><button type="button" data-sort="date">Date${arrow("date")}</button></th><th>Source</th><th>Description</th><th>Head</th><th class="num"><button type="button" data-sort="amt">Amount${arrow("amt")}</button></th></tr></thead><tbody>${pg.map((t) => `<tr><td class="n" style="white-space:nowrap">${esc(t[1] ? new Date(t[1] + "T00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : T.monthLabel(t[0]))}</td><td><span class="src">${t[2] === "B" ? "Bank" : "Razorpay"}</span></td><td>${esc(t[3])}${t[7] ? `<br><small class="hint">${esc(t[7])}</small>` : ""}</td><td>${esc(t[6] ? T.H[t[6]].name : t[5] || "–")}</td><td class="num ${t[4] < 0 ? "neg" : "pos"}">${esc(I(t[4]))}</td></tr>`).join("") || `<tr><td colspan="5">No lines match.</td></tr>`}</tbody></table>`;
     const sum = rows.reduce((a, t) => a + t[4], 0);
-    $("#regCount").textContent = `${rows.length.toLocaleString("en-IN")} lines · net ${I(sum)}`;
+    $("#regCount").textContent = `${rows.length.toLocaleString("en-IN")} line${rows.length === 1 ? "" : "s"} · net ${I(sum)}`;
     $("#pager").innerHTML = pages > 1 ? `<button type="button" class="btn" data-pg="-1" ${S.page ? "" : "disabled"}>Previous</button><span>Page ${S.page + 1} of ${pages}</span><button type="button" class="btn" data-pg="1" ${S.page < pages - 1 ? "" : "disabled"}>Next</button>` : "";
   }
   function renderChips() {
@@ -385,8 +393,11 @@
     const same = r.rows.every((x) => Math.abs(x.cb - x.plan) < 0.005);
     const d = r.end - r.planEnd, endW = pw[pw.length - 1];
     $("#wiVerdict").textContent = same ? `With no changes, ${endW.long} closes at ${L(r.planEnd)}, exactly as planned.` : `With these changes, ${endW.long} closes at ${L(r.end)}, ${d >= 0 ? L(d) + " better" : L(-d) + " worse"} than the plan's ${L(r.planEnd)}.`;
-    const firstBelow = r.rows.find((x) => x.cb < S.min);
-    $("#wiSub").textContent = `Starts from the last actual closing balance, ${L(T.lastActual.close)} on ${T.lastActual.long}, and replays the ${pw.length} planned weeks.` + (firstBelow ? ` ${S.min ? "First week below the alert level" : "First overdrawn week"}: ${firstBelow.week.long}.` : ` Never ${S.min ? "below the alert level" : "overdrawn"} in the planned weeks.`) + (r.beyond > 0 ? ` ${L(r.beyond)} moves past ${endW.long}.` : "");
+    const lvl = S.min ? "below the " + L(S.min) + " alert level" : "overdrawn", startBad = T.lastActual.close < S.min;
+    const firstBelow = r.rows.find((x) => x.cb < S.min), firstOk = r.rows.find((x) => x.cb >= S.min);
+    const state = startBad ? (firstOk ? ` Already ${lvl} at the start; back above it in ${firstOk.week.long}.` : ` Already ${lvl} at the start, and stays ${lvl} through ${endW.long}.`)
+      : firstBelow ? ` First week ${lvl}: ${firstBelow.week.long}.` : ` Never ${lvl} in the planned weeks.`;
+    $("#wiSub").textContent = `Starts from the last actual closing balance, ${L(T.lastActual.close)} on ${T.lastActual.long}, and replays the ${pw.length} planned weeks.` + state + (r.beyond > 0 ? ` ${L(r.beyond)} moves past ${endW.long}.` : "");
     $("#wiBadge").innerHTML = same ? `<span class="badge same">Matches the plan exactly</span>` : `<span class="badge diff">Differs from the plan</span>`;
     const pts = [{ label: T.lastActual.short, tip: T.lastActual.long + " (last actual)", v: T.lastActual.close, planned: false }].concat(r.rows.map((x) => ({ label: x.week.short, tip: x.week.long, v: x.cb, planned: true })));
     C.balance($("#wiChart"), pts, { min: S.min, fmt: L, height: 240, label: "What-if closing balance", ghost: [T.lastActual.close].concat(r.rows.map((x) => x.plan)) });
@@ -453,6 +464,18 @@
     });
   }
 
+  /* ---------------- motion: things settle into place once, as they come into view ---------------- */
+  function initMotion() {
+    if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    document.documentElement.classList.add("motion");
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (!e.isIntersecting) return;
+      const t = e.target; io.unobserve(t); t.classList.add("in");
+      if (t.matches(".chart, #rack, #tags")) setTimeout(() => t.classList.add("done"), 1600); // later redraws (filters) don't replay
+    }), { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+    $$(".grid > .card, .chart, #rack, #tags").forEach((t) => io.observe(t));
+  }
+
   /* ---------------- render ---------------- */
   function drawCharts() { if (S.view !== "desk") return; renderCF(); renderBal(); renderLand(); }
   function render() {
@@ -483,7 +506,7 @@
     renderFoot();
     gate(() => {
       renderWhatIfForm(); readWhatIf(); initAsk();
-      render(); go(S.view, true);
+      render(); go(S.view, true); initMotion();
     });
   }
   window.__thrive = { T, S, render, ask: (q) => ThriveAsk.create(T, { getMin: () => S.min }).answer(q) };

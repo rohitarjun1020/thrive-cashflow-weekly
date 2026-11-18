@@ -156,6 +156,8 @@ select.ctl { padding-right: 6px; }
 .kt small { display: block; font-size: 10.5px; margin-top: 2px; opacity: .85; }
 .kt.ok { background: var(--gain-soft); color: var(--gain-ink); border: 1.5px solid var(--gain); }
 .kt.bad { background: var(--loss); color: #fff; }
+.kt.odw { background: var(--loss-soft); color: var(--loss-ink); border: 1.5px solid var(--loss); }
+.sw.odw { background: var(--loss-soft); border: 1.5px solid var(--loss); }
 .kt.pl { background: var(--card); border: 1.5px dashed var(--ink-3); color: var(--ink-2); }
 .kt.pl.badp { border-color: var(--loss); color: var(--loss-ink); }
 .kt:hover, .kt:focus-visible { transform: rotate(-4deg); }
@@ -343,6 +345,31 @@ table.data tbody tr:hover td { background: var(--sunk); }
   .figs { gap: 14px; } .fig { text-align: left; }
   .drawer { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 88vh; border-radius: 16px 16px 0 0; }
 }
+/* ---------- motion (only with IntersectionObserver and no reduced-motion preference; never in print) ----------
+   Cards rise into place once, key tags swing on their hooks, bars grow from the zero line, lines draw left to right.
+   Figures themselves never animate. */
+@media screen {
+  .motion .grid > .card { opacity: 0; transform: translateY(10px); transition: opacity .5s ease, transform .6s cubic-bezier(.2, .8, .2, 1); }
+  .motion .grid > .card.in { opacity: 1; transform: none; }
+  .motion #tags.in:not(.done) .tag { animation: tagSwing 1.1s cubic-bezier(.3, .6, .3, 1) both; transform-origin: 19px 50%; }
+  .motion #tags.in:not(.done) .tag:nth-child(2) { animation-delay: .06s; } .motion #tags.in:not(.done) .tag:nth-child(3) { animation-delay: .12s; }
+  .motion #tags.in:not(.done) .tag:nth-child(4) { animation-delay: .18s; } .motion #tags.in:not(.done) .tag:nth-child(5) { animation-delay: .24s; }
+  .motion #rack.in:not(.done) .kt { animation: keySway 1.4s cubic-bezier(.3, .6, .3, 1) both; }
+  .motion #rack.in:not(.done) .peg:nth-child(even) .kt { animation-delay: .08s; animation-direction: normal; }
+  .motion .chart:not(.in) svg .bi, .motion .chart:not(.in) svg .bo, .motion .chart:not(.in) svg .dt, .motion .chart:not(.in) svg .floor { opacity: 0; }
+  .motion .chart.in:not(.done) .bi { animation: growUp .7s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i, 0) * 18ms); transform-box: fill-box; transform-origin: 50% 100%; }
+  .motion .chart.in:not(.done) .bo { animation: growDown .7s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i, 0) * 18ms); transform-box: fill-box; transform-origin: 50% 0; }
+  .motion .chart.in:not(.done) .ln { stroke-dasharray: 1; animation: drawLine 1.2s ease-out both .15s; }
+  .motion .chart.in:not(.done) .dt { animation: fadeIn .4s ease both; animation-delay: calc(.2s + var(--i, 0) * 20ms); }
+  .motion .chart.in:not(.done) .floor { animation: floorIn .6s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i, 0) * 90ms); }
+}
+@keyframes tagSwing { 0% { transform: rotate(-5deg); } 45% { transform: rotate(2.5deg); } 75% { transform: rotate(-1deg); } 100% { transform: none; } }
+@keyframes keySway { 0% { transform: rotate(9deg); } 35% { transform: rotate(-5deg); } 65% { transform: rotate(2deg); } 100% { transform: none; } }
+@keyframes growUp { from { transform: scaleY(0); } to { transform: none; } }
+@keyframes growDown { from { transform: scaleY(0); } to { transform: none; } }
+@keyframes drawLine { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes floorIn { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 /* ---------- print ---------- */

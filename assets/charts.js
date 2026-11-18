@@ -102,17 +102,19 @@
       const cx = P.l + slot * i + slot / 2, x = cx - bw / 2;
       const g = el("g", { class: "hit" + (d.sel ? " sel" : "") }, s);
       el("rect", { x: P.l + slot * i, y: P.t, width: slot, height: H - P.t - P.b, fill: "transparent", class: "band" }, g);
-      el("path", { d: barPath(x, y(0) - 1, bw, y(d.in), 4), fill: d.planned ? "url(#hIn)" : gain, stroke: d.planned ? gain : "none", "stroke-width": d.planned ? 1.2 : 0 }, g);
-      el("path", { d: barPath(x, y(0) + 1, bw, y(-d.out), 4), fill: d.planned ? "url(#hOut)" : loss, stroke: d.planned ? loss : "none", "stroke-width": d.planned ? 1.2 : 0 }, g);
+      el("path", { class: "bi", style: `--i:${i}`, d: barPath(x, y(0) - 1, bw, y(d.in), 4), fill: d.planned ? "url(#hIn)" : gain, stroke: d.planned ? gain : "none", "stroke-width": d.planned ? 1.2 : 0 }, g);
+      el("path", { class: "bo", style: `--i:${i}`, d: barPath(x, y(0) + 1, bw, y(-d.out), 4), fill: d.planned ? "url(#hOut)" : loss, stroke: d.planned ? loss : "none", "stroke-width": d.planned ? 1.2 : 0 }, g);
+      if (d.planned && d.inA > 0) el("path", { class: "bi", style: `--i:${i}`, d: barPath(x, y(0) - 1, bw, y(Math.min(d.inA, d.in)), d.inA >= d.in ? 4 : 0), fill: gain }, g); // actual weeks of a part-planned month stay solid
+      if (d.planned && d.outA > 0) el("path", { class: "bo", style: `--i:${i}`, d: barPath(x, y(0) + 1, bw, y(-Math.min(d.outA, d.out)), d.outA >= d.out ? 4 : 0), fill: loss }, g);
       netPts.push([cx, y(d.in - d.out), d.planned]);
-      if ((i % every === 0 && n - 1 - i >= every * 2) || i === n - 1) text(s, cx, H - 10, d.label, { "text-anchor": "middle", class: "ax" + (d.planned ? " pl" : "") });
-      wire(g, () => `<b>${esc(d.tip)}</b>${d.planned ? ' <span class="stamp pl">Planned</span>' : ""}<table><tr><td><i class="sw in"></i>Money in</td><td>${esc(o.fmt(d.in))}</td></tr><tr><td><i class="sw out"></i>Money out</td><td>${esc(o.fmt(-d.out))}</td></tr><tr><td><i class="sw net"></i>Net</td><td>${esc(o.fmt(d.in - d.out))}</td></tr></table>${o.onClick ? '<small>Click for line items</small>' : ""}`,
+      if ((i % every === 0 && n - 1 - i >= every) || i === n - 1) text(s, cx, H - 10, d.label, { "text-anchor": "middle", class: "ax" + (d.planned ? " pl" : "") });
+      wire(g, () => `<b>${esc(d.tip)}</b>${d.planned ? ' <span class="stamp pl">Planned</span>' : ""}<table><tr><td><i class="sw in"></i>Money in</td><td>${esc(o.fmt(d.in))}</td></tr><tr><td><i class="sw out"></i>Money out</td><td>${esc(o.fmt(-d.out))}</td></tr><tr><td><i class="sw net"></i>Net</td><td>${esc(o.fmt(d.in - d.out))}</td></tr>${d.planned && (d.inA || d.outA) ? `<tr><td>Actual so far</td><td>in ${esc(o.fmt(d.inA))}, out ${esc(o.fmt(-d.outA))}</td></tr>` : ""}</table>${o.onClick ? '<small>Click for line items</small>' : ""}`,
         o.onClick ? () => o.onClick(d) : null, `${d.tip}: in ${o.fmt(d.in)}, out ${o.fmt(d.out)}`);
     });
     if (o.net !== false && netPts.length > 1) {
       let dA = "", dP = "";
       netPts.forEach((p, i) => { if (i === 0) return; const a = netPts[i - 1], seg = `M${a[0]},${a[1]}L${p[0]},${p[1]}`; if (p[2]) dP += seg; else dA += seg; });
-      el("path", { d: dA, fill: "none", stroke: ink, "stroke-width": 2, "pointer-events": "none" }, s);
+      el("path", { class: "ln", pathLength: 1, d: dA, fill: "none", stroke: ink, "stroke-width": 2, "pointer-events": "none" }, s);
       el("path", { d: dP, fill: "none", stroke: ink, "stroke-width": 2, "stroke-dasharray": "4 4", "pointer-events": "none" }, s);
       netPts.forEach((p) => el("circle", { cx: p[0], cy: p[1], r: slot < 14 ? 0 : 3, fill: css("--card"), stroke: ink, "stroke-width": 1.6, "pointer-events": "none" }, s));
     }
@@ -149,14 +151,14 @@
     if (o.ghost) el("path", { d: o.ghost.map((v, i) => `${i ? "L" : "M"}${x(i)},${y(v)}`).join(""), fill: "none", stroke: css("--ink-3"), "stroke-width": 1.5, "stroke-dasharray": "2 4" }, s);
     let dA = "", dP = "";
     pts.forEach((p, i) => { if (!i) return; const seg = `M${x(i - 1)},${y(pts[i - 1].v)}L${x(i)},${y(p.v)}`; if (p.planned) dP += seg; else dA += seg; });
-    el("path", { d: dA, fill: "none", stroke: ink, "stroke-width": 2, "stroke-linejoin": "round" }, s);
+    el("path", { class: "ln", pathLength: 1, d: dA, fill: "none", stroke: ink, "stroke-width": 2, "stroke-linejoin": "round" }, s);
     el("path", { d: dP, fill: "none", stroke: ink, "stroke-width": 2, "stroke-dasharray": "5 5" }, s);
     const every = Math.ceil(n / Math.max(1, Math.floor((W - P.l - P.r) / 58)));
     pts.forEach((p, i) => {
       const g = el("g", { class: "hit" }, s), below = p.v < min;
       el("rect", { x: x(i) - (W - P.l - P.r) / Math.max(n - 1, 1) / 2, y: P.t, width: (W - P.l - P.r) / Math.max(n - 1, 1), height: H - P.t - P.b, fill: "transparent", class: "band" }, g);
-      el("circle", { cx: x(i), cy: y(p.v), r: n > 60 ? 2.6 : 4.2, fill: p.planned ? css("--card") : below ? loss : gain, stroke: below ? loss : gain, "stroke-width": 2, "stroke-dasharray": p.planned ? "2 2" : null }, g);
-      if ((i % every === 0 && n - 1 - i >= every * 2) || i === n - 1) text(s, x(i), H - 10, p.label, { "text-anchor": i === n - 1 && n > 3 ? "end" : "middle", class: "ax" + (p.planned ? " pl" : "") });
+      el("circle", { class: "dt", style: `--i:${i}`, cx: x(i), cy: y(p.v), r: n > 60 ? 2.6 : 4.2, fill: p.planned ? css("--card") : below ? loss : gain, stroke: below ? loss : gain, "stroke-width": 2, "stroke-dasharray": p.planned ? "2 2" : null }, g);
+      if ((i % every === 0 && (every === 1 || n - 1 - i >= every * 2)) || i === n - 1) text(s, x(i), H - 10, p.label, { "text-anchor": i === n - 1 && n > 3 ? "end" : "middle", class: "ax" + (p.planned ? " pl" : "") });
       wire(g, () => `<b>${esc(p.tip)}</b>${p.planned ? ' <span class="stamp pl">Planned</span>' : ""}${below ? ` <span class="stamp od">${min ? "Below alert" : "Overdrawn"}</span>` : ""}<table><tr><td>Closing balance</td><td>${esc(o.fmt(p.v))}</td></tr></table>${o.onClick ? "<small>Click for line items</small>" : ""}`,
         o.onClick ? () => o.onClick(p) : null, `${p.tip}: closing ${o.fmt(p.v)}`);
     });
@@ -178,7 +180,7 @@
     el("path", { d: `M0,${yTop - 8}H${avail * (order[0] ? order[0].commit / max : 1)}`, stroke: ink, "stroke-width": 3 }, s); // parapet
     order.forEach((p, i) => {
       const w = avail * p.commit / max, yy = yTop + i * (floor + gap);
-      const g = el("g", { class: "hit floor" }, s);
+      const g = el("g", { class: "hit floor", style: `--i:${i}` }, s);
       el("rect", { x: left, y: yy, width: w, height: floor, rx: 3, fill: desk, stroke: line }, g);
       const win = p.rows.length, ww = 9, wg = 6, winW = win * (ww + wg) - wg;
       const labEnd = left + 12 + Math.max(p.name.length * 7.4, (o.fmt(p.commit) + " a month").length * 6.4) + 12;

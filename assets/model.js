@@ -92,7 +92,7 @@
         .sort((a, b) => b.v - a.v).slice(0, n || 6);
     }
     const rentIn = (v) => v.r11 || 0;
-    const rentOut = (v) => v.r26 || 0;
+    const rentOut = (v) => (v.r26 || 0) + (v.r27 || 0); // landlord rent incl. the duplicate-payment row, same as the Landlord rent spend group
     const cover = (v) => (rentOut(v) ? rentIn(v) / rentOut(v) : null);
 
     /* ---------- balances at the last actual week ---------- */
