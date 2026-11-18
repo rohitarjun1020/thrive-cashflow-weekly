@@ -6,7 +6,7 @@
   const $ = (s, r) => (r || document).querySelector(s), $$ = (s, r) => [...(r || document).querySelectorAll(s)];
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const L = T.lakh, I = T.inr;
-  const PASS_HASH = "c815fd02b26f77f58a46401ec1e1646448c8744b0aa5a3a0822a1ade3118f201";
+  const PASS_HASH = "b4d1b2cff12bafe2bd2e51cd15becdc6237b30a0861b137544b6fb8ca2d4477f";
   const ASK_CLAUDE_URL = "https://claude.ai/artifact/R8gTMHXmcD2ymPSeBSErmQ"; // set to the private claude.ai artifact link
 
   /* ---------------- state & link settings ---------------- */

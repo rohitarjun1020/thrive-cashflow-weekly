@@ -5,7 +5,7 @@
 // Expected values are worked out straight from window.CF here, not from the app's own code.
 async (page) => {
   const BASE = "http://127.0.0.1:8741/";
-  const PASS = "Thrive@Desk2026";
+  const PASS = "SRF-2026";
   const R = [], errors = [];
   const ok = (name, cond, info) => R.push((cond ? "PASS " : "FAIL ") + name + (info !== undefined && !cond ? "  [" + info + "]" : ""));
   page.on("pageerror", (e) => errors.push(e.message));
