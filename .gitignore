@@ -1,0 +1,8 @@
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/questions/
+.impeccable/hook.cache.json
+.impeccable/config.local.json
+.playwright-cli/
+__pycache__/
+.claude/

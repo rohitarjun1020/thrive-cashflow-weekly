@@ -1,0 +1,659 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-18T00:00:00Z",
+  "title": "Design System: Thrive Front Desk",
+  "extensions": {
+    "colorMeta": {
+      "desk-charcoal": {
+        "role": "primary",
+        "displayName": "Front Desk Charcoal",
+        "canonical": "oklch(26.6% 0.009 248.2)",
+        "tonalRamp": [
+          "#0A0B0D",
+          "#232528",
+          "#3F4246",
+          "#5D6266",
+          "#7E8387",
+          "#A1A5A9",
+          "#C6C9CD",
+          "#ECEFF1"
+        ]
+      },
+      "brass": {
+        "role": "secondary",
+        "displayName": "Brass",
+        "canonical": "oklch(51.3% 0.094 63.8)",
+        "tonalRamp": [
+          "#180600",
+          "#391E00",
+          "#5D3811",
+          "#835627",
+          "#A77748",
+          "#C69C75",
+          "#E6C2A1",
+          "#FFE9CF"
+        ]
+      },
+      "brass-ink": {
+        "role": "secondary",
+        "displayName": "Brass Ink",
+        "canonical": "oklch(46.0% 0.088 63.2)",
+        "tonalRamp": [
+          "#170600",
+          "#381E03",
+          "#5B3916",
+          "#82562C",
+          "#A5784D",
+          "#C49C78",
+          "#E4C2A4",
+          "#FFE9D1"
+        ]
+      },
+      "brass-soft": {
+        "role": "secondary",
+        "displayName": "Brass Wash",
+        "canonical": "oklch(93.9% 0.022 74.1)",
+        "tonalRamp": [
+          "#0E0B07",
+          "#29241E",
+          "#484138",
+          "#686055",
+          "#8A8175",
+          "#ACA499",
+          "#CFC8BF",
+          "#F3EEE7"
+        ]
+      },
+      "oak": {
+        "role": "tertiary",
+        "displayName": "Oak",
+        "canonical": "oklch(89.7% 0.028 76.2)",
+        "tonalRamp": [
+          "#0F0A05",
+          "#2A241B",
+          "#494135",
+          "#6A6051",
+          "#8C8171",
+          "#ADA396",
+          "#D0C8BD",
+          "#F4EDE5"
+        ]
+      },
+      "oak-deep": {
+        "role": "tertiary",
+        "displayName": "Oak Deep",
+        "canonical": "oklch(85.7% 0.037 74.0)",
+        "tonalRamp": [
+          "#100A04",
+          "#2C2318",
+          "#4B4031",
+          "#6D5F4C",
+          "#8F806C",
+          "#B0A392",
+          "#D3C7B9",
+          "#F6EDE1"
+        ]
+      },
+      "oak-ink": {
+        "role": "tertiary",
+        "displayName": "Oak Ink",
+        "canonical": "oklch(41.0% 0.042 66.2)",
+        "tonalRamp": [
+          "#110903",
+          "#2E2317",
+          "#4E3F30",
+          "#715D4A",
+          "#937E6A",
+          "#B4A190",
+          "#D5C6B8",
+          "#F8ECE1"
+        ]
+      },
+      "oak-line": {
+        "role": "tertiary",
+        "displayName": "Oak Line",
+        "canonical": "oklch(79.1% 0.045 72.8)",
+        "tonalRamp": [
+          "#110A03",
+          "#2E2315",
+          "#4E3F2D",
+          "#705E47",
+          "#927F67",
+          "#B3A28E",
+          "#D5C7B5",
+          "#F8EDDF"
+        ]
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Warm Ground",
+        "canonical": "oklch(95.8% 0.004 91.4)",
+        "tonalRamp": [
+          "#0B0B0A",
+          "#252524",
+          "#424240",
+          "#62615F",
+          "#838280",
+          "#A6A5A3",
+          "#CAC9C7",
+          "#EFEEED"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Card White",
+        "canonical": "oklch(100.0% 0.000 89.9)",
+        "tonalRamp": [
+          "#0B0B0B",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#A5A5A5",
+          "#C9C9C9",
+          "#EEEEEE"
+        ]
+      },
+      "sunk": {
+        "role": "neutral",
+        "displayName": "Sunk",
+        "canonical": "oklch(97.3% 0.004 91.4)",
+        "tonalRamp": [
+          "#0B0B0A",
+          "#252524",
+          "#424240",
+          "#62615F",
+          "#838280",
+          "#A6A5A3",
+          "#CAC9C7",
+          "#EFEEED"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "oklch(91.3% 0.007 88.6)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#262523",
+          "#43423F",
+          "#63615D",
+          "#84827E",
+          "#A6A5A1",
+          "#CAC9C6",
+          "#EFEEEC"
+        ]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Strong Hairline",
+        "canonical": "oklch(85.5% 0.012 84.6)",
+        "tonalRamp": [
+          "#0C0B08",
+          "#272521",
+          "#44423D",
+          "#64615A",
+          "#85827B",
+          "#A8A59F",
+          "#CBC9C4",
+          "#F0EEEA"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "oklch(93.7% 0.006 84.6)",
+        "tonalRamp": [
+          "#0C0B0A",
+          "#262523",
+          "#43423F",
+          "#63615E",
+          "#84827F",
+          "#A6A5A2",
+          "#CAC9C6",
+          "#EFEEEC"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(25.3% 0.008 240.2)",
+        "tonalRamp": [
+          "#0A0B0D",
+          "#232527",
+          "#3F4245",
+          "#5D6265",
+          "#7E8386",
+          "#A2A6A9",
+          "#C6CACC",
+          "#ECEFF1"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Ink 2",
+        "canonical": "oklch(41.7% 0.011 248.1)",
+        "tonalRamp": [
+          "#090B0D",
+          "#232528",
+          "#3F4246",
+          "#5D6267",
+          "#7E8388",
+          "#A1A6AA",
+          "#C6CACD",
+          "#ECEFF2"
+        ]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Ink 3",
+        "canonical": "oklch(52.9% 0.010 248.0)",
+        "tonalRamp": [
+          "#0A0B0D",
+          "#232528",
+          "#3F4246",
+          "#5D6266",
+          "#7E8388",
+          "#A1A5AA",
+          "#C6C9CD",
+          "#ECEFF2"
+        ]
+      },
+      "head-ink": {
+        "role": "neutral",
+        "displayName": "Header Ink",
+        "canonical": "oklch(96.2% 0.006 84.6)",
+        "tonalRamp": [
+          "#0C0B0A",
+          "#262523",
+          "#43423F",
+          "#63615E",
+          "#84827F",
+          "#A6A5A2",
+          "#CAC9C6",
+          "#EFEEEC"
+        ]
+      },
+      "head-ink-2": {
+        "role": "neutral",
+        "displayName": "Header Ink 2",
+        "canonical": "oklch(80.8% 0.010 87.5)",
+        "tonalRamp": [
+          "#0C0B09",
+          "#262521",
+          "#44423D",
+          "#63615B",
+          "#85827C",
+          "#A7A59F",
+          "#CBC9C4",
+          "#F0EEEB"
+        ]
+      },
+      "gain": {
+        "role": "money",
+        "displayName": "Gain Green",
+        "canonical": "oklch(62.2% 0.133 162.3)",
+        "tonalRamp": [
+          "#001204",
+          "#003118",
+          "#005230",
+          "#00764B",
+          "#20996C",
+          "#62BA91",
+          "#96DBB9",
+          "#C8FDE1"
+        ]
+      },
+      "gain-ink": {
+        "role": "money",
+        "displayName": "Gain Ink",
+        "canonical": "oklch(50.8% 0.105 165.6)",
+        "tonalRamp": [
+          "#001106",
+          "#002F1D",
+          "#004F37",
+          "#127254",
+          "#3F9574",
+          "#71B699",
+          "#A0D8BF",
+          "#CFFAE6"
+        ]
+      },
+      "gain-soft": {
+        "role": "money",
+        "displayName": "Gain Wash",
+        "canonical": "oklch(95.2% 0.021 166.1)",
+        "tonalRamp": [
+          "#070D0A",
+          "#1F2724",
+          "#3A4540",
+          "#57655F",
+          "#788680",
+          "#9CA8A3",
+          "#C2CCC7",
+          "#E8F1ED"
+        ]
+      },
+      "loss": {
+        "role": "money",
+        "displayName": "Loss Red",
+        "canonical": "oklch(62.6% 0.193 23.0)",
+        "tonalRamp": [
+          "#270000",
+          "#520003",
+          "#7F0217",
+          "#B01F2C",
+          "#D9494D",
+          "#F57B77",
+          "#FFA8A3",
+          "#FFD6D1"
+        ]
+      },
+      "loss-ink": {
+        "role": "money",
+        "displayName": "Loss Ink",
+        "canonical": "oklch(54.2% 0.185 24.1)",
+        "tonalRamp": [
+          "#260000",
+          "#500004",
+          "#7D0B17",
+          "#AE262C",
+          "#D64E4D",
+          "#F27D78",
+          "#FFAAA4",
+          "#FFD7D1"
+        ]
+      },
+      "loss-soft": {
+        "role": "money",
+        "displayName": "Loss Wash",
+        "canonical": "oklch(94.9% 0.021 17.5)",
+        "tonalRamp": [
+          "#0F090A",
+          "#2B2323",
+          "#4A3F3F",
+          "#6C5D5D",
+          "#8E7E7E",
+          "#AFA1A1",
+          "#D2C6C6",
+          "#F5ECEC"
+        ]
+      },
+      "warn-ink": {
+        "role": "money",
+        "displayName": "Mixed Amber",
+        "canonical": "oklch(53.1% 0.117 63.8)",
+        "tonalRamp": [
+          "#1B0400",
+          "#3D1B00",
+          "#633500",
+          "#8B5209",
+          "#AF7335",
+          "#CE9967",
+          "#ECBF97",
+          "#FFE7C7"
+        ]
+      },
+      "dark-ground": {
+        "role": "dark-mode",
+        "displayName": "Dark Ground"
+      },
+      "dark-card": {
+        "role": "dark-mode",
+        "displayName": "Dark Card"
+      },
+      "dark-ink": {
+        "role": "dark-mode",
+        "displayName": "Dark Ink"
+      },
+      "dark-head": {
+        "role": "dark-mode",
+        "displayName": "Dark Header"
+      },
+      "dark-oak": {
+        "role": "dark-mode",
+        "displayName": "Walnut"
+      },
+      "dark-brass": {
+        "role": "dark-mode",
+        "displayName": "Dark Brass"
+      },
+      "dark-gain": {
+        "role": "dark-mode",
+        "displayName": "Dark Gain"
+      },
+      "dark-loss": {
+        "role": "dark-mode",
+        "displayName": "Dark Loss"
+      }
+    },
+    "typographyMeta": {
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "THRIVE in the header and on the keycard."
+      },
+      "display": {
+        "displayName": "Display",
+        "purpose": "Key-tag figures; the largest size on the page."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Verdict sentence and view titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Running text, with tabular figures."
+      },
+      "hint": {
+        "displayName": "Hint",
+        "purpose": "One line under each card title, in ink-3."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Key-tag captions and payment week rows; condensed caps."
+      },
+      "stamp": {
+        "displayName": "Stamp",
+        "purpose": "Rubber status stamps; condensed caps."
+      }
+    },
+    "shadows": [
+      {
+        "name": "hanging-tag",
+        "value": "0 1px 0 rgba(60,44,28,.10), 0 8px 18px -10px rgba(60,44,28,.45)",
+        "purpose": "Key tags on the desk band only."
+      },
+      {
+        "name": "hanging-tag-dark",
+        "value": "0 1px 0 rgba(0,0,0,.4), 0 10px 20px -12px rgba(0,0,0,.9)",
+        "purpose": "Key tags in dark mode."
+      },
+      {
+        "name": "card",
+        "value": "0 1px 2px rgba(31,35,38,.05)",
+        "purpose": "Cards, light mode only."
+      },
+      {
+        "name": "tooltip",
+        "value": "0 10px 28px -10px rgba(0,0,0,.35)",
+        "purpose": "Chart tooltip."
+      },
+      {
+        "name": "drawer",
+        "value": "0 24px 60px -20px rgba(0,0,0,.5)",
+        "purpose": "Detail drawer."
+      },
+      {
+        "name": "keycard",
+        "value": "0 30px 60px -24px rgba(0,0,0,.7)",
+        "purpose": "Passcode keycard on the gate."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-swing",
+        "value": "cubic-bezier(.2,.8,.2,1)",
+        "purpose": "Key-rack tag swing (0.2s), switch knob, drawer slide (0.28s)."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "none",
+        "purpose": "All animation and transition off under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tablet",
+        "value": "1180px"
+      },
+      {
+        "name": "phone",
+        "value": "760px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Default action button: downloads, copy, Ask Claude.",
+      "html": "<button class=\"ds-btn\">Download CSV</button>",
+      "css": ".ds-btn { font-family: Archivo, ui-sans-serif, system-ui, 'Segoe UI', sans-serif; display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px; border-radius: 8px; border: 1px solid #D3CFC7; background: #FFFFFF; color: #1F2326; font-size: 13px; font-weight: 600; cursor: pointer; } .ds-btn:hover { border-color: #676C71; } .ds-btn:focus-visible { outline: 2px solid #8C5A26; outline-offset: 2px; }"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single main action in a form (Ask).",
+      "html": "<button class=\"ds-btn-primary\">Ask</button>",
+      "css": ".ds-btn-primary { font-family: Archivo, ui-sans-serif, system-ui, 'Segoe UI', sans-serif; height: 34px; padding: 0 13px; border-radius: 8px; border: 1px solid #1F2326; background: #1F2326; color: #FFFFFF; font-size: 13px; font-weight: 600; cursor: pointer; } .ds-btn-primary:focus-visible { outline: 2px solid #8C5A26; outline-offset: 2px; }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "chip",
+      "refersTo": "segment-on",
+      "description": "Period presets and weekly/monthly toggles.",
+      "html": "<div class=\"ds-seg\"><button aria-pressed=\"true\">Weekly</button><button>Monthly</button></div>",
+      "css": ".ds-seg { font-family: Archivo, ui-sans-serif, system-ui, 'Segoe UI', sans-serif; display: inline-flex; background: #FFFFFF; border: 1px solid #D3CFC7; border-radius: 9px; padding: 2px; gap: 2px; } .ds-seg button { font: inherit; height: 28px; padding: 0 11px; border: 0; border-radius: 7px; background: none; font-size: 13px; color: #484D52; cursor: pointer; } .ds-seg button:hover { color: #1F2326; background: #F7F6F3; } .ds-seg button[aria-pressed=true] { background: #1F2326; color: #FFFFFF; font-weight: 600; } .ds-seg button:focus-visible { outline: 2px solid #8C5A26; outline-offset: 2px; }"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "select",
+      "description": "Register search; selects and the alert field share the same shell.",
+      "html": "<label class=\"ds-search\"><svg viewBox=\"0 0 20 20\" width=\"16\" height=\"16\" aria-hidden=\"true\"><circle cx=\"9\" cy=\"9\" r=\"5.5\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"/><path d=\"M13.2 13.2L17 17\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\"/></svg><input placeholder=\"Search lines\"></label>",
+      "css": ".ds-search { font-family: Archivo, ui-sans-serif, system-ui, 'Segoe UI', sans-serif; display: flex; align-items: center; gap: 6px; height: 34px; width: 260px; border: 1px solid #D3CFC7; border-radius: 8px; padding: 0 10px; background: #FFFFFF; color: #676C71; } .ds-search input { font: inherit; border: 0; outline: 0; background: transparent; width: 100%; font-size: 13px; color: #1F2326; } .ds-search:focus-within { outline: 2px solid #8C5A26; outline-offset: 1px; }"
+    },
+    {
+      "name": "Header Navigation",
+      "kind": "nav",
+      "refersTo": "header",
+      "description": "Charcoal header with wordmark and view tabs; a brass underline marks the current view.",
+      "html": "<nav class=\"ds-top\"><span class=\"ds-word\">THRIVE</span><button aria-current=\"page\">Front desk</button><button>What if</button><button>Ask AI</button></nav>",
+      "css": ".ds-top { font-family: Archivo, ui-sans-serif, system-ui, 'Segoe UI', sans-serif; display: flex; align-items: center; gap: 2px; min-height: 56px; padding: 0 24px; background: #22262A; color: #F4F2EE; } .ds-word { font-weight: 800; font-stretch: 112%; font-size: 21px; letter-spacing: .06em; margin-right: 28px; } .ds-top button { font: inherit; border: 0; background: none; padding: 8px 12px; border-radius: 8px; color: #C3C0B9; font-weight: 500; font-size: 13.5px; cursor: pointer; } .ds-top button:hover { color: #F4F2EE; background: rgba(255,255,255,.06); } .ds-top button[aria-current=page] { color: #F4F2EE; box-shadow: inset 0 -2px 0 #8C5A26; border-radius: 8px 8px 0 0; } .ds-top button:focus-visible { outline: 2px solid #8C5A26; outline-offset: 2px; }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "filter-chip",
+      "description": "Active register filter, removable.",
+      "html": "<span class=\"ds-chip\">Rent, Gachibowli<button aria-label=\"Remove\">&#215;</button></span>",
+      "css": ".ds-chip { font-family: Archivo, ui-sans-serif, system-ui, 'Segoe UI', sans-serif; display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 6px 0 10px; border-radius: 13px; background: #F4E9DB; color: #7A4C1C; font-size: 12.5px; font-weight: 600; } .ds-chip button { font: inherit; width: 18px; height: 18px; border: 0; border-radius: 50%; background: none; color: inherit; cursor: pointer; } .ds-chip button:hover { background: rgba(0,0,0,.08); } .ds-chip button:focus-visible { outline: 2px solid #8C5A26; outline-offset: 2px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Register card: title, one hint line, content.",
+      "html": "<section class=\"ds-card\"><h2>Spend by category</h2><p>Money out in the selected period.</p></section>",
+      "css": ".ds-card { font-family: Archivo, ui-sans-serif, system-ui, 'Segoe UI', sans-serif; background: #FFFFFF; border: 1px solid #E4E2DD; border-radius: 12px; padding: 16px 18px 18px; box-shadow: 0 1px 2px rgba(31,35,38,.05); color: #1F2326; width: 320px; } .ds-card h2 { margin: 0; font-size: 15.5px; font-weight: 700; line-height: 1.25; } .ds-card p { margin: 2px 0 0; font-size: 12.5px; color: #676C71; }"
+    },
+    {
+      "name": "Key Tag with Stamp",
+      "kind": "custom",
+      "refersTo": "key-tag",
+      "description": "Signature: a headline figure as a hanging enamel tag with a rubber status stamp, on the oak desk band.",
+      "html": "<div class=\"ds-desk\"><div class=\"ds-tag\"><span class=\"lb\">Closing</span><b class=\"v\">-4.2 L</b><span class=\"ds-stamp\">Overdrawn</span><span class=\"s\">Bank balance at the latest week</span></div></div>",
+      "css": ".ds-desk { font-family: Archivo, ui-sans-serif, system-ui, 'Segoe UI', sans-serif; padding: 20px 24px 22px; background: linear-gradient(180deg, #E8DBC9, #DFCDB6); border-radius: 16px; font-variant-numeric: tabular-nums; } .ds-tag { position: relative; width: 200px; background: #FFFFFF; border-radius: 10px 10px 10px 30px; padding: 13px 14px 12px 38px; box-shadow: 0 1px 0 rgba(60,44,28,.10), 0 8px 18px -10px rgba(60,44,28,.45); } .ds-tag::before { content: ''; position: absolute; left: 13px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: #DFCDB6; box-shadow: inset 0 1px 2px rgba(0,0,0,.28); } .ds-tag .lb { display: block; font-stretch: 78%; font-weight: 700; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: #676C71; } .ds-tag .v { display: block; font-size: 24px; font-weight: 750; letter-spacing: -.01em; margin: 3px 0 4px; color: #C42F35; } .ds-tag .s { display: block; font-size: 12px; color: #676C71; margin-top: 6px; } .ds-stamp { display: inline-block; font-stretch: 75%; font-weight: 700; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; border: 1.5px solid currentColor; border-radius: 3px; padding: 0 5px; line-height: 16px; transform: rotate(-2deg); color: #C42F35; }"
+    },
+    {
+      "name": "Key Rack",
+      "kind": "custom",
+      "refersTo": "key-tag",
+      "description": "Signature: the latest weeks hang from a rail as tags (in credit, overdrawn, planned); the current week is ringed in brass.",
+      "html": "<div class=\"ds-rack\"><div class=\"ds-peg\"><button class=\"ds-kt ok\">Nov 2<b>3.1</b><small>Actual</small></button></div><div class=\"ds-peg\"><button class=\"ds-kt bad here\">Nov 9<b>-4.2</b><small>Latest</small></button></div><div class=\"ds-peg\"><button class=\"ds-kt pl\">Nov 16<b>1.8</b><small>Planned</small></button></div></div>",
+      "css": ".ds-rack { font-family: Archivo, ui-sans-serif, system-ui, 'Segoe UI', sans-serif; display: flex; gap: 12px; padding: 0 6px 6px; border-top: 5px solid #CDB79C; font-variant-numeric: tabular-nums; } .ds-peg { display: flex; flex-direction: column; align-items: center; width: 80px; } .ds-peg::before { content: ''; width: 3px; height: 14px; background: #CDB79C; } .ds-kt { font: inherit; width: 100%; border: 0; border-radius: 6px 6px 16px 16px; padding: 9px 6px 11px; text-align: center; font-size: 11.5px; cursor: pointer; transition: transform .2s cubic-bezier(.2,.8,.2,1); transform-origin: 50% -14px; } .ds-kt::before { content: ''; display: block; width: 8px; height: 8px; border-radius: 50%; margin: 0 auto 6px; background: #F2F1EE; box-shadow: inset 0 1px 2px rgba(0,0,0,.3); } .ds-kt b { display: block; font-size: 14px; font-weight: 750; margin-top: 2px; } .ds-kt small { display: block; font-size: 10.5px; margin-top: 2px; opacity: .85; } .ds-kt.ok { background: #E3F4EC; color: #047857; border: 1.5px solid #0E9F6E; } .ds-kt.bad { background: #E5484D; color: #fff; } .ds-kt.pl { background: #FFFFFF; border: 1.5px dashed #676C71; color: #484D52; } .ds-kt.here { box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #8C5A26; } .ds-kt:hover, .ds-kt:focus-visible { transform: rotate(-4deg); outline: none; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Front Desk",
+    "overview": "The page is the reception desk of a co-living house. A charcoal header carries the THRIVE wordmark; one oak desk band holds the verdict sentence and five enamel key tags, each with a rubber status stamp; the latest weeks hang as tags on a key rack; everything else is the register: white cards with hairline borders on a warm grey ground. The world lives in a few objects (tag, stamp, rack, building, keycard). The rest stays quiet so the numbers carry the page.\n\nDensity is moderate and type is deliberately modest: the largest figure on the page is 24px. One family, Archivo, does every job by changing its width: condensed for stamps and labels, normal for reading, expanded for the wordmark. Figures are always tabular.\n\nRejected by the user and not to return: the v1 bright bento SaaS board, Poppins with serif capitals, oversized titles, emoji, and decoration that carries no meaning.",
+    "keyCharacteristics": [
+      "Charcoal header, oak desk band, warm ground, white cards.",
+      "Brass marks whatever is live: selection, focus, current week, links, active tab.",
+      "Green and red appear only for money in/out, gain/loss and overdrawn state, always paired with a sign, a stamp or a position.",
+      "Archivo variable (wdth 62-125, wght 400-800) only, with tabular figures.",
+      "Charts drawn to scale on one axis; planned data is dashed or hatched, never a different hue."
+    ],
+    "rules": [
+      {
+        "name": "The Money Pair Rule",
+        "body": "Green and red mean money in/gain and money out/loss/overdrawn, nothing else. Every use is paired with a sign, a stamp or a position above/below the line, never colour alone.",
+        "section": "colors"
+      },
+      {
+        "name": "The Brass Is Live Rule",
+        "body": "If the reader can act on it or it is the current selection, it is brass. Brass is not used for decoration.",
+        "section": "colors"
+      },
+      {
+        "name": "The Clear Figures Rule",
+        "body": "Theme material (oak, charcoal, line art, gradients) never sits behind a number. Figures sit on card white or the ground.",
+        "section": "colors"
+      },
+      {
+        "name": "The Modest Scale Rule",
+        "body": "Nothing on the page exceeds 24px. A larger number earns weight, not size.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Family Rule",
+        "body": "Archivo only. Width and weight carry the hierarchy; no second face, no serif, no Poppins.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "All figures use tabular numerals (set on body), so columns of lakh values align.",
+        "section": "typography"
+      },
+      {
+        "name": "The Only Things That Hang Rule",
+        "body": "Soft warm drop shadows belong to tags and the keycard. Cards don't lift; no hard offset shadows.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do set every figure in Archivo with tabular numerals on card white or ground.",
+      "Do use brass for focus, selection, current week, active tabs and links.",
+      "Do pair green or red with a sign, a stamp or a position above/below the line.",
+      "Do show planned data with dashes, hatching or a dashed stamp, in the same hue as actual.",
+      "Do draw charts to scale on one axis and give each card a title and one hint line.",
+      "Do honour reduced motion: all animation and transition is switched off."
+    ],
+    "donts": [
+      "Don't use Poppins, serif capitals or any second family.",
+      "Don't set titles or figures above 24px.",
+      "Don't use emoji or glyph icons; icons are inline line SVGs.",
+      "Don't add decoration that carries no meaning; tags, stamps, the rack, the building and the Charminar each stand for something.",
+      "Don't put oak, charcoal, line art or gradients behind numbers.",
+      "Don't use green or red for anything except money direction, gain/loss and overdrawn state: not for actual/planned status, success, errors or emphasis.",
+      "Don't use the Charminar outside the gate and the footer.",
+      "Don't bring back the v1 bento layout or its bright card palette."
+    ]
+  }
+}
