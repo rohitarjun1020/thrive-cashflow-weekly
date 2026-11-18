@@ -462,8 +462,7 @@
     writeHash();
   }
   function renderFoot() {
-    const sv = T.meta.saved ? new Date(T.meta.saved) : null;
-    $("#foot").innerHTML = `<span>Source: ${esc(T.meta.source || window.CF.source)} (Cash Flow, Landlord Rent Payments, bank and Razorpay sheets) · saved ${sv ? esc(sv.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })) : ""} · ${T.actualW.length} actual weeks, ${T.plannedW.length} planned · <a href="dashboard-classic.html">Classic view</a></span><span>Prepared by Strategy Studio Labs, CFO services</span>`;
+    $("#foot").innerHTML = `<span></span><span>Prepared by Strategy Studio Labs, CFO services</span>`;
   }
 
   function boot() {
