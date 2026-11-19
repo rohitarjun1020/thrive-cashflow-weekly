@@ -298,14 +298,16 @@ table.data tbody tr:hover td { background: var(--sunk); }
 /* ---------- passcode gate: the front-desk check-in ---------- */
 .gate { position: fixed; inset: 0; z-index: 100; background: var(--head); color: var(--head-ink); display: grid; place-items: center; padding: 24px; overflow: auto; }
 .gate-in { display: grid; justify-items: center; gap: 18px; width: min(400px, 100%); }
-.gate .charm { width: 150px; height: auto; color: var(--desk); opacity: .9; }
-.keycard { width: 100%; background: linear-gradient(160deg, var(--desk), var(--desk-2)); color: #2A2118; border-radius: 18px; padding: 26px 24px 22px; box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .7); position: relative; }
+.gate .charm { width: 150px; height: auto; color: #E8DBC9; opacity: .9; }
+/* the key card is a physical object: the same light oak in light and dark themes, so its dark ink always reads */
+.keycard { width: 100%; background: linear-gradient(160deg, #E8DBC9, #DFCDB6); color: #2A2118; border-radius: 18px; padding: 26px 24px 22px; box-shadow: 0 30px 60px -24px rgba(0, 0, 0, .7); position: relative; }
 .keycard .stripe { position: absolute; left: 0; right: 0; top: 54px; height: 10px; background: rgba(42, 33, 24, .82); }
 .keycard .word { font-size: 18px; color: #2A2118; }
 .keycard h1 { font-size: 17px; margin-top: 30px; }
 .keycard p { font-size: 13px; color: #5A4632; margin-top: 4px; }
 .keycard .pc { display: flex; margin-top: 16px; background: #FFFDF9; border: 1px solid #CDB79C; border-radius: 10px; }
 .keycard .pc input { flex: 1; height: 42px; border: 0; background: transparent; padding: 0 12px; font-size: 15px; color: #1F2326; letter-spacing: .04em; min-width: 0; }
+.keycard .pc input:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px #FFFDF9 inset; -webkit-text-fill-color: #1F2326; }
 .keycard .pc input:focus { outline: none; } .keycard .pc:focus-within { outline: 2px solid #8C5A26; outline-offset: 2px; }
 .keycard .pc button { width: 42px; color: #5A4632; }
 .keycard .rem { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 13px; color: #3E3022; }
