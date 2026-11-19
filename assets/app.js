@@ -413,7 +413,7 @@
     $("#askSugg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) ask(b.textContent); });
     $("#askForm").addEventListener("submit", () => { const q = $("#askIn").value.trim(); if (q) { ask(q); $("#askIn").value = ""; } });
     $("#askLog").addEventListener("click", (e) => { const b = e.target.closest("[data-q]"); if (b) ask(b.dataset.q); });
-    $("#askLog").innerHTML = `<div class="msg bot"><p>Hello. I answer questions about Thrive's cash flow straight from the ${esc(T.meta.source || "weekly file")}. Actual figures run to ${esc(T.lastActual.long)}; later weeks are planned. Try one of the questions below.</p></div>`;
+    $("#askLog").innerHTML = `<div class="msg bot"><p>Hi! Ask me anything about Thrive's cash flow, or tap a question below.</p></div>`;
   }
   function ask(q) {
     const log = $("#askLog");

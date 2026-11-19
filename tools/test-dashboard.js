@@ -204,6 +204,7 @@ async (page) => {
   }
   await setHash("from=2026-04&to=2026-11&cat=All&min=0&proj=1&g=m");
   {
+    await page.waitForSelector("#cfChart svg .hit", { timeout: 5000 }).catch(() => {});
     const labels = await page.$$eval("#cfChart svg text.ax", (els) => els.map((e) => e.textContent));
     ok("monthly chart labels every month (Oct'26 present)", labels.includes("Oct'26") && labels.includes("Nov'26"), labels.join(","));
     const solid = await page.$$eval("#cfChart svg .hit", (gs) => gs[gs.length - 1].querySelectorAll("path.bi:not([fill^='url'])").length);
