@@ -147,7 +147,7 @@
     el("path", { d: area, fill: loss, "fill-opacity": 0.16, "clip-path": `url(#${id})` }, s);
     el("line", { x1: P.l, x2: W - P.r, y1: y(min), y2: y(min), stroke: min ? accent : ink, "stroke-width": 1.2, "stroke-dasharray": min ? "5 4" : null }, s);
     el("rect", { x: P.l, y: 5, width: 14, height: 10, rx: 2, fill: loss, "fill-opacity": 0.16, stroke: min ? accent : ink, "stroke-width": 1 }, s);
-    text(s, P.l + 20, 14, min ? "Shaded: below your alert level of " + o.fmt(min) : (W < 560 ? "Shaded: overdrawn (below ₹0)" : "Shaded: the account is overdrawn (below the ₹0 line)"), { class: "ax strong" });
+    text(s, P.l + 20, 14, o.zeroText ? o.zeroText : min ? "Shaded: below your alert level of " + o.fmt(min) : (W < 560 ? "Shaded: overdrawn (below ₹0)" : "Shaded: the account is overdrawn (below the ₹0 line)"), { class: "ax strong" });
     if (o.ghost) el("path", { d: o.ghost.map((v, i) => `${i ? "L" : "M"}${x(i)},${y(v)}`).join(""), fill: "none", stroke: css("--ink-3"), "stroke-width": 1.5, "stroke-dasharray": "2 4" }, s);
     let dA = "", dP = "";
     pts.forEach((p, i) => { if (!i) return; const seg = `M${x(i - 1)},${y(pts[i - 1].v)}L${x(i)},${y(p.v)}`; if (p.planned) dP += seg; else dA += seg; });
@@ -159,8 +159,8 @@
       el("rect", { x: x(i) - (W - P.l - P.r) / Math.max(n - 1, 1) / 2, y: P.t, width: (W - P.l - P.r) / Math.max(n - 1, 1), height: H - P.t - P.b, fill: "transparent", class: "band" }, g);
       el("circle", { class: "dt", style: `--i:${i}`, cx: x(i), cy: y(p.v), r: n > 60 ? 2.6 : 4.2, fill: p.planned ? css("--card") : below ? loss : gain, stroke: below ? loss : gain, "stroke-width": 2, "stroke-dasharray": p.planned ? "2 2" : null }, g);
       if ((i % every === 0 && (every === 1 || n - 1 - i >= every * 2)) || i === n - 1) text(s, x(i), H - 10, p.label, { "text-anchor": i === n - 1 && n > 3 ? "end" : "middle", class: "ax" + (p.planned ? " pl" : "") });
-      wire(g, () => `<b>${esc(p.tip)}</b>${p.planned ? ' <span class="stamp pl">Planned</span>' : ""}${below ? ` <span class="stamp od">${min ? "Below alert" : "Overdrawn"}</span>` : ""}<table><tr><td>Closing balance</td><td>${esc(o.fmt(p.v))}</td></tr></table>${o.onClick ? "<small>Click for line items</small>" : ""}`,
-        o.onClick ? () => o.onClick(p) : null, `${p.tip}: closing ${o.fmt(p.v)}`);
+      wire(g, () => `<b>${esc(p.tip)}</b>${p.planned ? ' <span class="stamp pl">Planned</span>' : ""}${below ? ` <span class="stamp od">${esc(o.belowWord || (min ? "Below alert" : "Overdrawn"))}</span>` : ""}<table><tr><td>${esc(o.valueName || "Closing balance")}</td><td>${esc(o.fmt(p.v))}</td></tr></table>${o.onClick ? "<small>Click for line items</small>" : ""}`,
+        o.onClick ? () => o.onClick(p) : null, `${p.tip}: ${o.valueName ? o.valueName.toLowerCase() : "closing"} ${o.fmt(p.v)}`);
     });
     rove(s);
     host.appendChild(s);

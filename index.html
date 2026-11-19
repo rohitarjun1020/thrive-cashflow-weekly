@@ -26,6 +26,7 @@
     <nav class="views" aria-label="Views">
       <button type="button" data-view="desk" aria-current="page">Front desk</button>
       <button type="button" data-view="whatif">What if</button>
+      <button type="button" data-view="newprop">New property</button>
       <button type="button" data-view="ask">Ask AI</button>
     </nav>
     <div class="top-act">
@@ -152,6 +153,65 @@
     </div>
   </section>
 
+  <!-- ============ NEW PROPERTY ============ -->
+  <section id="v-newprop" class="view" hidden aria-labelledby="npH">
+    <div class="wi-head">
+      <h1 id="npH" class="verdict">Would a new property work? <span id="npBadge"></span></h1>
+      <p class="hint" id="npVerdict" aria-live="polite"></p>
+      <p class="hint">Fill in the property's numbers on the left; every result updates as you type. Example values are filled in to start: replace them with the real ones.</p>
+    </div>
+    <div class="grid np">
+      <form class="card c6 np-form" id="npForm" aria-label="New property inputs" onsubmit="return false"></form>
+      <div class="c6 np-res">
+        <section class="card" aria-labelledby="npChecksH">
+          <h2 id="npChecksH">The checks</h2>
+          <ul class="np-checks" id="npChecks"></ul>
+          <div class="np-figs" id="npFigs"></div>
+        </section>
+        <section class="card" aria-labelledby="npMonthH">
+          <h2 id="npMonthH">A full month, first year</h2>
+          <p class="hint">Once every expected resident has moved in, at this year's prices.</p>
+          <table class="data np-month" id="npMonth"></table>
+        </section>
+        <section class="card" aria-labelledby="npThriveH">
+          <h2 id="npThriveH">What it means for Thrive</h2>
+          <ul class="np-list" id="npThrive"></ul>
+        </section>
+      </div>
+      <section class="card c12" aria-labelledby="npFlowH">
+        <div class="card-h"><div><h2 id="npFlowH">Month by month: income and running costs</h2><p class="hint">Rent and other income against landlord rent, GST and running costs. Setup costs and deposits are left out here.</p></div><div class="legend"><span><i class="sw in"></i>Income</span><span><i class="sw out"></i>Landlord rent, GST and running costs</span><span><i class="sw net"></i>Profit</span></div></div>
+        <div class="chart" id="npFlow"></div>
+      </section>
+      <section class="card c12" aria-labelledby="npCumH">
+        <div class="card-h"><div><h2 id="npCumH">Getting the money back</h2><p class="hint">Thrive's running total: profits minus setup costs and the landlord deposit. Where the line crosses ₹0, the money is back.</p></div></div>
+        <div class="chart" id="npCum"></div>
+      </section>
+      <section class="card c12" aria-labelledby="npTableH">
+        <h2 id="npTableH">Every month</h2>
+        <div class="tbl-wrap"><table class="data np-table" id="npTable"></table></div>
+        <p class="hint" id="npEnd"></p>
+      </section>
+      <section class="card c6" aria-labelledby="npGridH">
+        <h2 id="npGridH">If fewer beds fill, or rent changes</h2>
+        <p class="hint">Profit in a full month, first year. Your expected residents are highlighted when they match a row.</p>
+        <div class="tbl-wrap"><table class="data np-grid" id="npGrid"></table></div>
+      </section>
+      <section class="card c6" aria-labelledby="npHowH">
+        <h2 id="npHowH">How this is worked out</h2>
+        <ul class="np-list">
+          <li>Rents are entered per bed, per month, without GST. Average rent assumes residents spread across room types in the same mix as the beds.</li>
+          <li>Residents move in evenly over the fill-up months once the work is finished. Each month, residents ÷ average stay leave, and are replaced in the same month.</li>
+          <li>Setup costs and the landlord deposit are paid in month 1. Landlord rent starts after the rent-free months; running costs start when residents can move in.</li>
+          <li>GST RCM is added on landlord rent. Rent, running cost and landlord increases apply every 12 months from the lease start.</li>
+          <li>Residents' deposits are collected on move-in and refunded on move-out. They are owed back, so they never count as profit or as money back.</li>
+          <li>"Money back" is the first month the running total (profits minus setup and landlord deposit) reaches ₹0. The landlord deposit counts as spent until the lease ends.</li>
+          <li>Break-even is the number of residents at which a full month neither makes nor loses money. Figures are before income tax and loan interest.</li>
+          <li>The checks: a full month makes money; occupancy can fall at least 10 points before a month loses money; money back within your target and within the period. All four pass = Feasible; a full-month loss or no money back in the period = Not feasible; anything else = Marginal.</li>
+        </ul>
+      </section>
+    </div>
+  </section>
+
   <!-- ============ ASK AI ============ -->
   <section id="v-ask" class="view" hidden aria-labelledby="askH">
     <div class="ask">
@@ -185,6 +245,8 @@
 <script src="assets/model.js"></script>
 <script src="assets/charts.js"></script>
 <script src="assets/ask.js"></script>
+<script src="assets/property.js"></script>
+<script src="assets/property-ui.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>

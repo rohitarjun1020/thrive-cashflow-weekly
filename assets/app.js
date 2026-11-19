@@ -34,7 +34,7 @@
       if (h.get("min") != null && h.get("min") !== "" && !isNaN(+h.get("min"))) S.min = +h.get("min") * 1e5;
       if (h.get("proj") != null) S.proj = h.get("proj") !== "0";
       if (["w", "m"].includes(h.get("g"))) S.grain = h.get("g");
-      if (["desk", "whatif", "ask"].includes(h.get("view"))) S.view = h.get("view");
+      if (["desk", "whatif", "newprop", "ask"].includes(h.get("view"))) S.view = h.get("view");
     } catch (e) { /* bad link: keep defaults */ }
   }
   function writeHash() {
@@ -424,12 +424,15 @@
   }
 
   /* ---------------- views, theme, gate ---------------- */
+  let NP = null; // New property page, built on first visit
+  const np = () => NP || (NP = window.ThrivePropertyUI.init({ T, C, esc, L, I, stamp, toast }));
   function go(view, quiet) {
     S.view = view;
     $$(".views button").forEach((b) => (b.dataset.view === view ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
     $$(".view").forEach((v) => (v.hidden = v.id !== "v-" + view));
-    $("#filters").hidden = view === "ask";
+    $("#filters").hidden = view === "ask" || view === "newprop";
     if (view === "whatif") renderWhatIf();
+    if (view === "newprop") requestAnimationFrame(() => np().render());
     if (!quiet) { writeHash(); window.scrollTo(0, 0); }
     if (view === "desk") requestAnimationFrame(drawCharts);
   }
@@ -501,7 +504,7 @@
     window.addEventListener("hashchange", () => { const before = JSON.stringify([S.from, S.to, S.cat, S.min, S.proj, S.view]); readHash(); if (JSON.stringify([S.from, S.to, S.cat, S.min, S.proj, S.view]) !== before) { go(S.view, true); render(); } });
     const top = () => document.documentElement.style.setProperty("--top-h", ($(".top").offsetHeight + ($("#filters").offsetHeight || 0) + 8) + "px");
     new ResizeObserver(top).observe(document.body);
-    let rw = 0; new ResizeObserver(() => { const w = $("#main").clientWidth; if (Math.abs(w - rw) > 4) { rw = w; drawCharts(); if (S.view === "whatif") renderWhatIf(); } }).observe($("#main"));
+    let rw = 0; new ResizeObserver(() => { const w = $("#main").clientWidth; if (Math.abs(w - rw) > 4) { rw = w; drawCharts(); if (S.view === "whatif") renderWhatIf(); if (S.view === "newprop" && NP) NP.redraw(); } }).observe($("#main"));
     window.addEventListener("beforeprint", () => { S._pw = S.view; if (S.view !== "desk") go("desk", true); });
     renderFoot();
     gate(() => {

@@ -7,11 +7,13 @@ Static dashboard for Thrivescape Ventures (Thrive Living, Hyderabad), built from
   - `assets/model.js`: all figures and logic (periods, totals, verdict, watch list, landlords, what-if)
   - `assets/charts.js`: hand-drawn SVG charts
   - `assets/ask.js`: Ask AI, the built-in question answering (no AI service, nothing sent anywhere)
+  - `assets/property.js`: New property feasibility maths (pure; hand-checked by `node tools/test-property.js`)
+  - `assets/property-ui.js`: the New property page (inputs saved in the browser only, key `thrive.newprop`)
   - `assets/app.js`, `assets/app.css`: the page
 - `dashboard-classic.html` + `classic/`: the previous version, kept as-is
 - `data.js`: figures extracted from the workbook (no estimates)
 - `tools/refresh.py`: one-step weekly refresh (see `WEEKLY-UPDATE.md`)
-- `tools/test-dashboard.js`: browser checks (playwright-cli)
+- `tools/test-dashboard.js`, `tools/test-newprop.js`: browser checks (playwright-cli)
 - `vendor/`: Apache ECharts 5.5.1 for the classic page (Apache-2.0, see `vendor/ECHARTS-LICENSE.txt`)
 - `fonts/`: Public Sans for the classic page (SIL OFL, see `fonts/OFL.txt`); the new page uses Archivo from Google Fonts
 
