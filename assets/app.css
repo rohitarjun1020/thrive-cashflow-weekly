@@ -470,3 +470,4 @@ table.data tbody tr:hover td { background: var(--sunk); }
   .np-rooms td > input { padding: 0 6px; }
   .np-rooms .np-in { padding: 0 6px; }
 }
+.np-empty { color: var(--ink-3); font-size: 13.5px; padding: 28px 0; text-align: center; margin: 0; border: 1px dashed var(--line-2); border-radius: 10px; }

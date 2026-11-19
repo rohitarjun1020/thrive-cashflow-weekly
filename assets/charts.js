@@ -88,10 +88,10 @@
     hatch(s, "hIn", gain); hatch(s, "hOut", loss);
     const maxIn = Math.max(1, ...items.map((d) => d.in)), maxOut = Math.max(1, ...items.map((d) => d.out));
     const top = Math.max(maxIn, ...items.map((d) => d.in - d.out)), bot = Math.max(maxOut, ...items.map((d) => d.out - d.in));
-    const step = nice(Math.max(top, bot));
+    const step = nice(Math.max(top, bot, 4e5)); // at least ₹1 L a gridline, so labels never repeat
     const hi = Math.ceil(top / step) * step, lo = -Math.ceil(bot / step) * step;
     const y = (v) => P.t + (hi - v) / (hi - lo) * (H - P.t - P.b);
-    for (let v = lo; v <= hi + 1; v += step) {
+    for (let v = lo; v <= hi + step / 2; v += step) {
       el("line", { x1: P.l, x2: W - P.r, y1: y(v), y2: y(v), stroke: v === 0 ? ink : rule, "stroke-width": v === 0 ? 1 : 1 }, s);
       text(s, P.l - 8, y(v) + 4, axisL(v), { "text-anchor": "end", class: "ax" });
     }
@@ -131,11 +131,12 @@
     const s = svg(W, H, o.label || "Closing bank balance");
     const ink = css("--ink"), rule = css("--rule"), loss = css("--loss"), gain = css("--gain"), accent = css("--accent");
     const min = o.min || 0, vals = pts.map((p) => p.v).concat([0, min], o.ghost || []);
-    const step = nice(Math.max(...vals) - Math.min(...vals));
-    const hi = Math.ceil(Math.max(...vals) / step) * step, lo = Math.floor(Math.min(...vals) / step) * step;
+    const step = nice(Math.max(Math.max(...vals) - Math.min(...vals), 4e5));
+    let hi = Math.ceil(Math.max(...vals) / step) * step, lo = Math.floor(Math.min(...vals) / step) * step;
+    if (hi === lo) hi = lo + step;
     const y = (v) => P.t + (hi - v) / ((hi - lo) || 1) * (H - P.t - P.b);
     const n = pts.length, x = (i) => P.l + (n === 1 ? (W - P.l - P.r) / 2 : i * (W - P.l - P.r) / (n - 1));
-    for (let v = lo; v <= hi + 1; v += step) {
+    for (let v = lo; v <= hi + step / 2; v += step) {
       el("line", { x1: P.l, x2: W - P.r, y1: y(v), y2: y(v), stroke: rule }, s);
       text(s, P.l - 8, y(v) + 4, axisL(v), { "text-anchor": "end", class: "ax" });
     }

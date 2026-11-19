@@ -60,6 +60,14 @@ async (page) => {
   await page.click("#npClear"); await page.waitForTimeout(200);
   ok("clear all gives the fill-in state", (await page.textContent("#npBadge")).toLowerCase().includes("fill in"));
   ok("no NaN or Infinity when empty", !/NaN|Infinity|undefined/.test(await page.textContent("#v-newprop")));
+  ok("empty: every key figure is a dash", (await page.$$eval("#npFigs b", (b) => b.every((x) => x.textContent === "–"))));
+  ok("empty: charts replaced by a short message", (await page.$$eval("#npFlow .np-empty, #npCum .np-empty", (e) => e.length)) === 2);
+  // tiny figures: axis labels must not repeat or spill out of the chart
+  await page.evaluate(() => document.querySelectorAll(".np-sec").forEach((d) => (d.open = true)));
+  await page.fill('[data-p="rooms.single.rooms"]', "1"); await page.fill('[data-p="rooms.single.rent"]', "100");
+  await page.fill("#np-residents", "1"); await page.waitForTimeout(200);
+  const ax = await page.evaluate(() => ["#npFlow", "#npCum"].map((q) => { const s = document.querySelector(q + " svg"); if (!s) return "missing"; const h = s.getBoundingClientRect(); const t = [...s.querySelectorAll("text.ax")].filter((e) => e.getAttribute("text-anchor") === "end" && /L$|^0$/.test(e.textContent)); const out = t.filter((e) => { const b = e.getBoundingClientRect(); return b.top < h.top - 1 || b.bottom > h.bottom + 1; }).length; const lab = t.map((e) => e.textContent); return out + "|" + (new Set(lab).size === lab.length ? "unique" : lab.join(",")); }));
+  ok("tiny figures: chart axis labels stay inside and don't repeat", ax.every((a) => a === "0|unique"), ax.join(" / "));
   await page.click("#npExample"); await page.waitForTimeout(200);
   ok("load example restores Marginal", (await page.textContent("#npBadge")).trim().toLowerCase() === "marginal");
   ok("no NaN anywhere with the example", !/NaN|Infinity|undefined/.test(await page.textContent("#v-newprop")));

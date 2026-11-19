@@ -123,6 +123,7 @@
         ["Rent cover", r.rentCover == null ? "–" : r.rentCover.toFixed(2) + "×", "Rent collected ÷ rent to landlord"],
         ["Yearly return on upfront", r.annualReturn == null ? "–" : pct(r.annualReturn, 1), "Full-month profit × 12 ÷ upfront spend"],
       ];
+      if (r.verdict === "incomplete") figs.forEach((f) => { f[1] = "–"; f[2] = ""; f[3] = ""; });
       $("#npFigs").innerHTML = figs.map(([l, val, s, cls]) => `<div class="np-fig"><span>${esc(l)}</span><b class="${cls || ""}">${esc(val)}</b>${s ? `<small>${esc(s)}</small>` : ""}</div>`).join("");
 
       // a full month
@@ -139,9 +140,14 @@
 
       // charts
       const items = r.rows.map((x) => ({ label: monthName(x.m), tip: `${monthName(x.m)} (month ${x.m})${x.open ? ` · ${x.res} residents` : " · before opening"}`, in: x.rentIn + x.other, out: x.llRent + x.gst + x.fixed + x.variable + x.marketing, planned: false }));
+      if (r.verdict === "incomplete") {
+        const msg = '<p class="np-empty">The chart appears once rooms, rent and residents are filled in.</p>';
+        $("#npFlow").innerHTML = msg; $("#npCum").innerHTML = msg;
+      } else {
       C.inout($("#npFlow"), items, { fmt: L, label: "Monthly income and costs, " + name });
       C.balance($("#npCum"), r.rows.map((x) => ({ label: monthName(x.m), tip: `${monthName(x.m)} (month ${x.m})`, v: x.cumInvest, planned: false })), { min: 0, fmt: L, label: "Thrive's money in the property, running total",
         zeroText: "Shaded: setup money not yet back", belowWord: "Not yet paid back", valueName: "Money back so far" });
+      }
 
       // month table
       $("#npTable").innerHTML = `<thead><tr><th class="sticky">Month</th><th class="num">Residents</th><th class="num">Income</th><th class="num">Landlord rent + GST</th><th class="num">Running costs</th><th class="num">Profit</th><th class="num">Setup + landlord deposit</th><th class="num">Residents' deposits (net)</th><th class="num">Money back so far</th></tr></thead><tbody>${r.rows.map((x) => `<tr class="${x.m === r.payback ? "hl" : ""}"><td class="sticky">${esc(monthName(x.m))} <small>M${x.m}</small></td><td class="num">${x.res}</td><td class="num">${esc(L(x.rentIn + x.other))}</td><td class="num">${esc(L(-(x.llRent + x.gst)))}</td><td class="num">${esc(L(-(x.fixed + x.variable + x.marketing)))}</td><td class="num ${neg(x.profit)}">${esc(L(x.profit))}</td><td class="num">${x.setup + x.llDep ? esc(L(-(x.setup + x.llDep))) : "–"}</td><td class="num">${Math.abs(x.depIn - x.depOut) > 0.5 ? esc(L(x.depIn - x.depOut)) : "–"}</td><td class="num ${neg(x.cumInvest)}">${esc(L(x.cumInvest))}</td></tr>`).join("")}</tbody>
